@@ -17,15 +17,15 @@ export default async function handler(req, res) {
     const prompt = `Rewrite the following text in the style: ${preset}.
     Text: ${text}`;
 
-    const completion = await groq.chat.completions.create({
-      model: "mixtral-8x7b-32768",  
-      messages: [
-        { role: "system", content: "You rewrite student notes cleanly." },
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.6,
-      max_tokens: 500,
-    });
+    const completion = await client.chat.completions.create({
+  model: "llama-3.3-70b-versatile",
+  messages: [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userText },
+  ],
+  temperature: 0.7,
+});
+
 
     const output = completion.choices[0].message.content.trim();
 
