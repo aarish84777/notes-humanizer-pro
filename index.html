@@ -861,7 +861,8 @@ Option 2: In a bigger project
       const res = await fetch("/api/humanize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preset, text })
+        body: JSON.stringify({ preset, userText: text })
+
       });
 
       const data = await res.json();
