@@ -854,34 +854,27 @@ Option 2: In a bigger project
   </div>
 
   <script>
-    // ===================== Mock AI Function =====================
-    /**
-     * Mock AI call.
-     * In production, replace this with a real API call (e.g. OpenAI/Claude).
-     *
-     * @param {string} preset - One of "simple", "exam", "genz", "teacher".
-     * @param {string} text   - Raw user input text.
-     * @returns {Promise<string>} - Humanized version of the text.
-     */
+
+    // ========== REAL AI FUNCTION (IMPORTANT) ==========
     async function callAI(preset, text) {
-      const presetPrefixes = {
-        simple: "[Simple Humanized Version]\n\n",
-        exam: "[Exam-Ready Version]\n\n",
-        genz: "[Gen-Z Version]\n\n",
-        teacher: "[Teacher-Safe Version]\n\n"
-      };
+      try {
+        const response = await fetch("/api/humanize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ preset, text })
+        });
 
-      const prefix = presetPrefixes[preset] || "[Humanized Version]\n\n";
-
-      // Simulate latency (800ms)
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(prefix + text);
-        }, 800);
-      });
+        const data = await response.json();
+        return data.output || null;
+      } catch (err) {
+        console.error("callAI error:", err);
+        return null;
+      }
     }
 
-    // ===================== App Logic =====================
+
+
+    
     (function initNotesHumanizerApp() {
       // DOM references
       const inputTextEl = document.getElementById("inputText");
@@ -1006,8 +999,25 @@ Option 2: In a bigger project
 
           setOutputLoading();
 
-          const result = await callAI(selectedPreset, rawText);
-          outputText = result || "";
+          const response = await fetch("/api/humanize", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    preset: selectedPreset,
+    text: rawText
+  })
+});
+
+const data = await response.json();
+
+if (data.error) {
+  throw new Error(data.error);
+}
+
+outputText = data.output || "";
+
           if (outputText) {
             setOutputText(outputText);
           } else {
