@@ -854,237 +854,78 @@ Option 2: In a bigger project
   </div>
 
   <script>
+(async function initNotesHumanizerApp() {
 
-    // ========== REAL AI FUNCTION (IMPORTANT) ==========
-    async function callAI(preset, text) {
-      try {
-        const response = await fetch("/api/humanize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ preset, text })
-        });
-
-        const data = await response.json();
-        return data.output || null;
-      } catch (err) {
-        console.error("callAI error:", err);
-        return null;
-      }
-    }
-
-
-
-    
-    (function initNotesHumanizerApp() {
-      // DOM references
-      const inputTextEl = document.getElementById("inputText");
-      const charCounterEl = document.getElementById("charCounter");
-      const inputErrorEl = document.getElementById("inputError");
-      const humanizeBtnEl = document.getElementById("humanizeBtn");
-      const humanizeBtnLabelEl = document.getElementById("humanizeBtnLabel");
-      const outputBoxEl = document.getElementById("outputBox");
-      const outputErrorEl = document.getElementById("outputError");
-      const copyBtnEl = document.getElementById("copyBtn");
-      const downloadBtnEl = document.getElementById("downloadBtn");
-      const modeUsedEl = document.getElementById("modeUsed");
-      const toastEl = document.getElementById("toast");
-      const toastMessageEl = document.getElementById("toastMessage");
-      const presetButtons = Array.from(document.querySelectorAll(".preset-btn"));
-
-      // App state
-      let selectedPreset = "simple";
-      let isLoading = false;
-      let outputText = "";
-      let toastTimeoutId = null;
-
-      const presetDisplayNames = {
-        simple: "Simple",
-        exam: "Exam-Ready",
-        genz: "Gen-Z",
-        teacher: "Teacher-Safe"
-      };
-
-      // ========== Character Counter ==========
-      function updateCharCounter() {
-        const currentLength = inputTextEl.value.length;
-        const maxLength = inputTextEl.maxLength || 2000;
-        charCounterEl.textContent = currentLength + " / " + maxLength + " characters";
-        if (maxLength - currentLength <= 200) {
-          charCounterEl.classList.add("char-counter-limit");
-        } else {
-          charCounterEl.classList.remove("char-counter-limit");
-        }
-      }
-
-      inputTextEl.addEventListener("input", updateCharCounter);
-
-      // ========== Preset Selection ==========
-      function setPreset(presetKey) {
-        selectedPreset = presetKey;
-        presetButtons.forEach((btn) => {
-          const isCurrent = btn.dataset.preset === presetKey;
-          btn.classList.toggle("selected", isCurrent);
-          btn.setAttribute("aria-pressed", isCurrent ? "true" : "false");
-        });
-        modeUsedEl.textContent = presetDisplayNames[presetKey] || "Simple";
-      }
-
-      presetButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const presetKey = btn.dataset.preset;
-          if (!presetKey || isLoading) return;
-          setPreset(presetKey);
-        });
+  async function callAI(preset, text) {
+    try {
+      const res = await fetch("/api/humanize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preset, text })
       });
 
-      // ========== Toast Handling ==========
-      function showToast(message) {
-        toastMessageEl.textContent = message || "Done.";
-        toastEl.classList.add("show");
-        if (toastTimeoutId) clearTimeout(toastTimeoutId);
-        toastTimeoutId = setTimeout(() => {
-          toastEl.classList.remove("show");
-        }, 1800);
-      }
+      const data = await res.json();
+      return data.output || null;
+    } catch (e) {
+      console.error("callAI failed:", e);
+      return null;
+    }
+  }
 
-      // ========== Output Helpers ==========
-      function setOutputPlaceholder() {
-        outputBoxEl.innerHTML =
-          '<div class="output-placeholder">Your humanized notes will appear here…</div>';
-      }
+  const inputTextEl = document.getElementById("inputText");
+  const outputBoxEl = document.getElementById("outputBox");
+  const outputErrorEl = document.getElementById("outputError");
+  const humanizeBtnEl = document.getElementById("humanizeBtn");
+  const modeUsedEl = document.getElementById("modeUsed");
+  const presetButtons = Array.from(document.querySelectorAll(".preset-btn"));
 
-      function setOutputLoading() {
-        outputBoxEl.innerHTML = `
-          <div class="output-loading" aria-hidden="true">
-            <div class="skeleton-line"></div>
-            <div class="skeleton-line"></div>
-            <div class="skeleton-line"></div>
-            <div class="skeleton-line"></div>
-          </div>
-        `;
-      }
+  let selectedPreset = "simple";
+  let outputText = "";
 
-      function setOutputText(text) {
-        // Simple text rendering, escaping basic HTML entities
-        const safeText = text
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/\n/g, "<br />");
-        outputBoxEl.innerHTML = safeText;
-      }
+  presetButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedPreset = btn.dataset.preset;
+      modeUsedEl.textContent = btn.dataset.preset;
+    });
+  });
 
-      // ========== Main Action: Humanize ==========
-      async function handleHumanizeClick() {
-        if (isLoading) return;
+  function setLoading() {
+    outputBoxEl.innerHTML = `
+      <div class="output-loading">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+      </div>`;
+  }
 
-        const rawText = inputTextEl.value.trim();
-        inputErrorEl.textContent = "";
-        outputErrorEl.textContent = "";
+  function setOutput(text) {
+    if (!text) {
+      outputBoxEl.innerHTML = `<div class="output-placeholder">Nothing returned…</div>`;
+      return;
+    }
+    outputBoxEl.innerHTML = text.replace(/\n/g, "<br>");
+  }
 
-        if (!rawText) {
-          inputErrorEl.textContent = "Please paste some text before humanizing.";
-          inputTextEl.focus();
-          return;
-        }
+  humanizeBtnEl.addEventListener("click", async () => {
+    const raw = inputTextEl.value.trim();
+    if (!raw) return;
 
-        try {
-          isLoading = true;
-          humanizeBtnEl.disabled = true;
-          humanizeBtnLabelEl.textContent = "Processing…";
-          humanizeBtnEl.innerHTML = `
-            <span class="spinner-dot" aria-hidden="true"></span>
-            <span id="humanizeBtnLabel">Processing…</span>
-          `;
+    setLoading();
 
-          setOutputLoading();
+    const result = await callAI(selectedPreset, raw);
 
-          const response = await fetch("/api/humanize", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    preset: selectedPreset,
-    text: rawText
-  })
-});
+    if (!result) {
+      outputErrorEl.textContent = "Error. Try again.";
+      setOutput("");
+      return;
+    }
 
-const data = await response.json();
+    outputText = result;
+    setOutput(result);
+  });
 
-if (data.error) {
-  throw new Error(data.error);
-}
-
-outputText = data.output || "";
-
-          if (outputText) {
-            setOutputText(outputText);
-          } else {
-            setOutputPlaceholder();
-          }
-        } catch (err) {
-          console.error("AI error:", err);
-          outputErrorEl.textContent = "Something went wrong. Please try again.";
-          setOutputPlaceholder();
-        } finally {
-          isLoading = false;
-          humanizeBtnEl.disabled = false;
-          humanizeBtnEl.innerHTML = `
-            <span class="primary-btn-icon">✨</span>
-            <span id="humanizeBtnLabel">Humanize Notes</span>
-          `;
-        }
-      }
-
-      humanizeBtnEl.addEventListener("click", handleHumanizeClick);
-
-      // ========== Copy Button ==========
-      async function handleCopyClick() {
-        if (!outputText) {
-          showToast("Nothing to copy yet.");
-          return;
-        }
-
-        try {
-          await navigator.clipboard.writeText(outputText);
-          showToast("Copied to clipboard!");
-        } catch (err) {
-          console.error("Clipboard error:", err);
-          showToast("Copy failed. Select & copy manually.");
-        }
-      }
-
-      copyBtnEl.addEventListener("click", handleCopyClick);
-
-      // ========== Download Button ==========
-      function handleDownloadClick() {
-        if (!outputText) {
-          showToast("Nothing to download yet.");
-          return;
-        }
-
-        const blob = new Blob([outputText], { type: "text/plain;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        const presetName = (presetDisplayNames[selectedPreset] || "Simple")
-          .toLowerCase()
-          .replace(/\s+/g, "-");
-        a.href = url;
-        a.download = `notes-humanizer-${presetName}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }
-
-      downloadBtnEl.addEventListener("click", handleDownloadClick);
-
-      // ========== Init on Load ==========
-      updateCharCounter();
-      setPreset(selectedPreset);
-      setOutputPlaceholder();
-    })();
-  </script>
+})();
+</script>
 </body>
 </html>
