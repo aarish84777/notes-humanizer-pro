@@ -790,7 +790,195 @@
 <body>
   <div class="app-root">
     <div class="app-container">
-      <!-- Nav -->
+
+    <!-- ========== LANDING PAGE (Super Safe) ========== -->
+<section id="landing-page" style="margin-bottom:4rem;">
+  
+  <!-- Landing Hero -->
+  <div style="
+    text-align: center; 
+    margin-top: 2.5rem;
+    margin-bottom: 3rem;
+  ">
+    <h1 style="
+      font-size: clamp(2.4rem, 5vw, 3rem);
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #020617;
+      margin-bottom: 0.75rem;
+    ">
+      Your Notes.  
+      <span style="
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+        -webkit-background-clip: text; 
+        color: transparent;
+      ">
+        Humanized.
+      </span>
+    </h1>
+
+    <p style="
+      max-width: 620px;
+      margin: 0 auto;
+      font-size: 1rem;
+      color: var(--text-muted);
+    ">
+      AI writes like a robot. Teachers hate that.  
+      This tool rewrites your notes to sound human, exam-ready, and actually understandable.
+    </p>
+
+    <button id="landing-scroll-btn" style="
+      margin-top: 1.75rem;
+      padding: 0.9rem 1.8rem;
+      border-radius: var(--radius-pill);
+      font-size: 1rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      box-shadow: var(--shadow-btn);
+      transition: var(--transition-fast);
+    ">
+      Start Humanizing ↓
+    </button>
+  </div>
+
+  <!-- Features Section -->
+  <div style="margin-top: 3rem;">
+    <h2 style="
+      text-align:center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1.8rem;
+      color: #0f172a;
+    ">Why Students Love This</h2>
+
+    <div style="
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.2rem;
+    ">
+      
+      <!-- Feature 1 -->
+      <div style="
+        background: var(--card-bg);
+        border: 1px solid var(--border-strong);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow-card);
+        padding: 1.4rem;
+        backdrop-filter: blur(20px);
+      ">
+        <h3 style="font-size:1.1rem; margin-bottom:0.4rem;">AI But Human</h3>
+        <p style="color:var(--text-soft); font-size:0.93rem;">
+          Turns robotic AI notes into natural human writing. Zero cringe.
+        </p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div style="
+        background: var(--card-bg);
+        border: 1px solid var(--border-strong);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow-card);
+        padding: 1.4rem;
+        backdrop-filter: blur(20px);
+      ">
+        <h3 style="font-size:1.1rem; margin-bottom:0.4rem;">6 Smart Modes</h3>
+        <p style="color:var(--text-soft); font-size:0.93rem;">
+          Simple, Exam, Gen Z, Teacher-safe, Cause→Effect, Simple Words.  
+          Pick your vibe.
+        </p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div style="
+        background: var(--card-bg);
+        border: 1px solid var(--border-strong);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow-card);
+        padding: 1.4rem;
+        backdrop-filter: blur(20px);
+      ">
+        <h3 style="font-size:1.1rem; margin-bottom:0.4rem;">Aesthetic UI</h3>
+        <p style="color:var(--text-soft); font-size:0.93rem;">
+          Apple-style glassmorphism, smooth shadows, and premium feel.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Mode Cards Section -->
+  <div style="margin-top: 4rem;">
+    <h2 style="
+      text-align:center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1.8rem;
+      color: #0f172a;
+    ">Your 6 Rewrite Styles</h2>
+
+    <div style="
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    ">
+      <div style="background:var(--card-bg); border:1px solid var(--border-strong); border-radius:1rem; padding:1.2rem;">
+        <strong>Simple</strong>
+        <p style="color:var(--text-soft); font-size:0.9rem;">Clean + natural sentences. Free.</p>
+      </div>
+
+      <div style="background:var(--card-bg); border:1px solid var(--border-strong); border-radius:1rem; padding:1.2rem;">
+        <strong>Exam-Ready</strong>
+        <p style="color:var(--text-soft); font-size:0.9rem;">Perfect for school answers.</p>
+      </div>
+
+      <div style="background:var(--card-bg); border:1px solid var(--border-strong); border-radius:1rem; padding:1.2rem;">
+        <strong>Gen Z</strong>
+        <p style="color:var(--text-soft); font-size:0.9rem;">Dark humour + emojis. Fun mode 😭🔥</p>
+      </div>
+
+      <div style="background:var(--card-bg); border:1px solid var(--border-strong); border-radius:1rem; padding:1.2rem;">
+        <strong>Teacher-Safe</strong>
+        <p style="color:var(--text-soft); font-size:0.9rem;">Formal + neat. No trouble.</p>
+      </div>
+
+      <div style="background:var(--card-bg); border:1px solid var(--border-strong); border-radius:1rem; padding:1.2rem;">
+        <strong>Cause → Effect</strong>
+        <p style="color:var(--text-soft); font-size:0.9rem;">Logic chains for History & Science.</p>
+      </div>
+
+      <div style="background:var(--card-bg); border:1px solid var(--border-strong); border-radius:1rem; padding:1.2rem;">
+        <strong>Simple Words</strong>
+        <p style="color:var(--text-soft); font-size:0.9rem;">Explained like you're 10.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="text-align:center; margin-top:3rem;">
+    <button id="landing-scroll-btn-2" style="
+      margin-top:1.2rem;
+      padding:0.85rem 1.8rem;
+      border-radius:var(--radius-pill);
+      font-size:1rem;
+      font-weight:600;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+      color:white;
+      border:none;
+      cursor:pointer;
+      box-shadow: var(--shadow-btn);
+      transition: var(--transition-fast);
+    ">
+      Open the Tool ↓
+    </button>
+  </div>
+
+</section>
+
+
       <header class="nav">
         <div class="nav-left">
           <div class="nav-logo-badge">NH</div>
@@ -1114,6 +1302,17 @@
 
       // Initial mode pill
       modeUsedEl.textContent = "SIMPLE";
+      // ========== Landing Page Scroll Buttons ==========
+  const landingBtn1 = document.getElementById("landing-scroll-btn");
+  const landingBtn2 = document.getElementById("landing-scroll-btn-2");
+
+  function scrollToTool() {
+    document.querySelector(".nav").scrollIntoView({ behavior: "smooth" });
+  }
+
+  if (landingBtn1) landingBtn1.addEventListener("click", scrollToTool);
+  if (landingBtn2) landingBtn2.addEventListener("click", scrollToTool);
+
     })();
   </script>
 </body>
