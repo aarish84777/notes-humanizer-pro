@@ -1012,7 +1012,7 @@
   </div>
 
   <!-- PRO MODAL -->
-  <div id="proModal" class="pro-modal-overlay">
+   class="pro-modal-overlay">
     <div class="pro-modal">
       <h2 class="pro-modal-title">PRO Feature 🔒</h2>
       <p class="pro-modal-text">
@@ -1249,13 +1249,6 @@
       return;
     }
 
-    // PRO mode gating
-    if (PRO_MODES.includes(selectedPreset)) {
-      if (!window.isUserLoggedIn) {
-        document.getElementById("proModal").style.display = "flex";
-        return;
-      }
-    }
 
     // CREDIT check
 // CREDIT check
