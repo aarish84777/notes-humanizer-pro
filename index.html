@@ -1334,5 +1334,23 @@
       modeUsedEl.textContent = "SIMPLE";
     })();
   </script>
+<script>
+// Close overlay when clicking outside the sign-in box
+document.addEventListener("click", function (e) {
+  const overlay = document.getElementById("sign-in");
+  const box = document.getElementById("clerk-sign-in");
+
+  // If overlay is visible AND click is outside the Clerk box → close
+  if (
+    overlay.style.display === "block" &&
+    !box.contains(e.target) &&
+    e.target !== document.getElementById("openSignIn")
+  ) {
+    overlay.style.display = "none";
+  }
+});
+</script>
+
+
 </body>
 </html>
