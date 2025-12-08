@@ -706,28 +706,44 @@
       }
 
       // NO CREDIT STATE
-      if (!hasCredit(selectedPreset)) {
-        if (!window.isUserLoggedIn) {
-          // Not logged in → open Clerk popup
-          if (window.showSignInOverlay) {
-            window.showSignInOverlay();
-          } else if (signInOverlay) {
-            signInOverlay.style.display = "block";
-          }
-          return;
-        }
+if (!hasCredit(selectedPreset)) {
+  console.log("NO CREDIT | loggedIn =", window.isUserLoggedIn, "| preset =", selectedPreset);
 
-        // Logged in → show PRO example modal
-        const example = PRO_EXAMPLES[selectedPreset] || {
-          input: "Input text",
-          output: "Output example"
-        };
-        exampleInput.textContent = example.input;
-        exampleOutput.textContent = example.output;
+  // CASE 1 → NOT LOGGED IN → ALWAYS SHOW LOGIN POPUP
+  if (!window.isUserLoggedIn) {
+    console.log("OPENING CLERK LOGIN POPUP");
 
-        exampleModal.style.display = "flex";
-        return;
+    if (window.showSignInOverlay) {
+      window.showSignInOverlay();
+    } else {
+      // Backup if function fails
+      const overlay = document.getElementById("sign-in");
+      if (overlay) overlay.style.display = "block";
+
+      const box = document.getElementById("clerk-sign-in");
+      if (window.Clerk && box && !box.hasChildNodes()) {
+        window.Clerk.mountSignIn(box, { appearance: { baseTheme: "light" } });
       }
+    }
+
+    return; // STOP HERE
+  }
+
+  // CASE 2 → LOGGED IN → SHOW PRO EXAMPLE POPUP
+  console.log("OPENING PRO EXAMPLE POPUP");
+
+  const example = PRO_EXAMPLES[selectedPreset] || {
+    input: "You completed all free credits.",
+    output: "Unlock PRO to continue using this mode!"
+  };
+
+  exampleInput.textContent = example.input;
+  exampleOutput.textContent = example.output;
+  exampleModal.style.display = "flex";
+
+  return;
+}
+
 
       // USE CREDIT
       useCredit(selectedPreset);
