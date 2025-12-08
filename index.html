@@ -268,25 +268,29 @@
     }
 
     /* MODALS */
-    .pro-modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-    }
+.pro-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(6px) !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important;
+}
 
-    .pro-modal {
-      background: white;
-      padding: 1.6rem;
-      border-radius: 1rem;
-      max-width: 500px;
-      width: 90%;
-      box-shadow: 0 24px 40px rgba(15, 23, 42, 0.22);
-    }
+
+.pro-modal {
+  background: white !important;
+  padding: 1.6rem !important;
+  border-radius: 1rem !important;
+  max-width: 500px !important;
+  width: 90% !important;
+  box-shadow: 0 24px 40px rgba(15,23,42,0.22) !important;
+  position: relative !important;
+  z-index: 9999999 !important;
+}
+
 
     /* TOAST */
     #toast {
