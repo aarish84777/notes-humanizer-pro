@@ -1258,10 +1258,48 @@
     }
 
     // CREDIT check
-    if (!hasCredit(selectedPreset)) {
-      document.getElementById("proExampleModal").style.display = "flex";
-      return;
+// CREDIT check
+if (!hasCredit(selectedPreset)) {
+
+    // Show PRO Example modal
+    const modal = document.getElementById("proExampleModal");
+    modal.style.display = "flex";
+
+    // Load elements
+    const exampleInput = document.getElementById("exampleInput");
+    const exampleOutput = document.getElementById("exampleOutput");
+
+    // Set examples based on the mode clicked
+    if (selectedPreset === "genz") {
+        exampleInput.textContent =
+          "The French Revolution changed France.";
+        exampleOutput.textContent =
+          "Bruhh the whole country said 'nah fam' to the king 💀🔥... People were DONE.";
     }
+
+    else if (selectedPreset === "cause_effect") {
+        exampleInput.textContent =
+          "Taxes increased in France.";
+        exampleOutput.textContent =
+          "Cause → Effect → Result:\n• High taxes → people angry → protests.\n• Food prices ↑ → riots.\n• Govt debt → collapse of monarchy.";
+    }
+
+    else if (selectedPreset === "exam") {
+        exampleInput.textContent =
+          "The French Revolution changed France.";
+        exampleOutput.textContent =
+          "The revolution led to major social, political, and economic changes in France.";
+    }
+
+    else {
+        // Default example for free modes
+        exampleInput.textContent = "Input text";
+        exampleOutput.textContent = "Output text will appear here...";
+    }
+
+    return; // Stop Humanize from running
+}
+
 
     // USE a credit now
     useCredit(selectedPreset);
