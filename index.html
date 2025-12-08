@@ -13,10 +13,11 @@
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
   </script>
 
-  <!-- Global Auth State -->
+  <!-- Global Auth State + Clerk wiring -->
   <script>
     window.isUserLoggedIn = false;
 
+    // Update navbar + PRO pills
     window.updateAuthUI = function () {
       const signInBtn = document.getElementById("openSignIn");
       const userBtnContainer = document.getElementById("clerk-user-button");
@@ -31,7 +32,7 @@
         userBtnContainer.style.display = "none";
       }
 
-      // Lock PRO preset pills when logged out
+      // Lock/unlock PRO labels visually
       const proButtons = document.querySelectorAll(
         '.preset-btn[data-preset="exam"], .preset-btn[data-preset="genz"], .preset-btn[data-preset="cause_effect"]'
       );
@@ -39,12 +40,7 @@
       proButtons.forEach(btn => {
         const pill = btn.querySelector(".preset-pro-pill");
         if (!pill) return;
-
-        if (window.isUserLoggedIn) {
-          pill.style.display = "none";
-        } else {
-          pill.style.display = "inline-flex";
-        }
+        pill.style.display = window.isUserLoggedIn ? "none" : "inline-flex";
       });
     };
 
@@ -52,33 +48,52 @@
       const signInOverlay = document.getElementById("sign-in");
       const signInBox = document.getElementById("clerk-sign-in");
       const openSignInBtn = document.getElementById("openSignIn");
+      const userBtnContainer = document.getElementById("clerk-user-button");
+
+      // Global helper to open Clerk sign-in
+      window.showSignInOverlay = function () {
+        if (!signInOverlay) return;
+        signInOverlay.style.display = "block";
+
+        if (window.Clerk && signInBox && !signInBox.hasChildNodes()) {
+          window.Clerk.mountSignIn(signInBox, {
+            appearance: { baseTheme: "light" }
+          });
+        }
+      };
 
       if (openSignInBtn) {
         openSignInBtn.addEventListener("click", () => {
-          signInOverlay.style.display = "block";
-          if (window.Clerk && signInBox) {
-            window.Clerk.mountSignIn(signInBox);
-          }
+          window.showSignInOverlay();
         });
       }
 
-      if (!window.Clerk) return;
+      if (!window.Clerk) {
+        console.warn("Clerk not loaded yet");
+        return;
+      }
 
-      await window.Clerk.load();
+      try {
+        await window.Clerk.load();
 
-      const emit = () => {
-        window.isUserLoggedIn = !!window.Clerk.user;
-        window.updateAuthUI();
-      };
+        const emit = () => {
+          // user is null when signed out, object with id when signed in
+          const user = window.Clerk.user;
+          window.isUserLoggedIn = !!(user && user.id);
+          window.updateAuthUI();
+        };
 
-      emit();
-      window.Clerk.addListener(emit);
+        emit();
+        window.Clerk.addListener(emit);
 
-      const userBtnContainer = document.getElementById("clerk-user-button");
-      if (userBtnContainer) {
-        window.Clerk.mountUserButton(userBtnContainer, {
-          afterSignOutUrl: window.location.href,
-        });
+        if (userBtnContainer) {
+          window.Clerk.mountUserButton(userBtnContainer, {
+            afterSignOutUrl: window.location.href,
+            appearance: { baseTheme: "light" }
+          });
+        }
+      } catch (err) {
+        console.error("Clerk load error:", err);
       }
     });
   </script>
@@ -88,7 +103,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- CSS (unchanged except modal cleanup + space for credit counter inside button) -->
+  <!-- CSS -->
   <style>
     :root {
       --accent-blue: #0ea5e9;
@@ -100,16 +115,23 @@
       --shadow-btn: 0 16px 40px rgba(8, 47, 73, 0.45);
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: "Inter", sans-serif;
       margin: 0;
       padding: 0;
       background: radial-gradient(circle at top left, #e0f2fe 0, #f9fafb 45%, #eef2ff 100%);
+      color: var(--text-main);
     }
 
+    /* NAVBAR */
     .nav {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       padding: 1rem 1.4rem;
       background: white;
       border-radius: 1rem;
@@ -129,6 +151,9 @@
       font-weight: 600;
       border: none;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
     }
 
     /* MAIN TOOL LAYOUT */
@@ -165,6 +190,12 @@
       border: 1px solid #cbd5e1;
       font-size: 0.95rem;
       resize: vertical;
+      outline: none;
+    }
+
+    .textarea:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.4);
     }
 
     .preset-btn {
@@ -176,37 +207,52 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 0.85rem;
+      cursor: pointer;
+      gap: 0.4rem;
     }
 
     .preset-btn.selected {
       background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
       color: white;
       border: none;
-      box-shadow: 0 10px 24px rgba(14,165,233,0.5);
+      box-shadow: 0 10px 24px rgba(14, 165, 233, 0.5);
     }
 
-    /* HUMANIZE BUTTON WITH COUNTER */
+    .preset-pro-pill {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid #facc15;
+      color: #f59e0b;
+      background: #fffbeb;
+      font-weight: 600;
+    }
+
+    /* HUMANIZE BUTTON */
     #humanizeBtn {
-      margin-top: 1rem;
+      margin-top: 0.4rem;
       width: 100%;
       border-radius: 999px;
       padding: 0.8rem 1rem;
       font-size: 1rem;
       font-weight: 700;
-      background: linear-gradient(135deg,#0ea5e9,#22c55e);
+      background: linear-gradient(135deg, #0ea5e9, #22c55e);
       color: white;
       border: none;
       cursor: pointer;
-      display: flex;
-      flex-direction: column;
+      display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
+      justify-content: center;
+      gap: 0.4rem;
       box-shadow: var(--shadow-btn);
     }
 
-    #humanizeCounter {
+    #humanizeCounterRow {
+      margin-top: 0.8rem;
       font-size: 0.78rem;
-      opacity: 0.9;
+      color: var(--text-soft);
+      text-align: right;
     }
 
     /* OUTPUT */
@@ -217,13 +263,15 @@
       padding: 0.8rem;
       border: 1px solid #cbd5e1;
       overflow-y: auto;
+      font-size: 0.93rem;
+      line-height: 1.5;
     }
 
     /* MODALS */
     .pro-modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15,23,42,0.45);
+      background: rgba(15, 23, 42, 0.45);
       backdrop-filter: blur(6px);
       display: none;
       align-items: center;
@@ -237,7 +285,22 @@
       border-radius: 1rem;
       max-width: 500px;
       width: 90%;
-      box-shadow: 0 24px 40px rgba(15,23,42,0.22);
+      box-shadow: 0 24px 40px rgba(15, 23, 42, 0.22);
+    }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      right: 1.5rem;
+      bottom: 1.5rem;
+      padding: 0.6rem 0.9rem;
+      background: #16a34a;
+      color: white;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.25s;
+      font-size: 0.8rem;
     }
   </style>
 </head>
@@ -283,15 +346,16 @@
   </section>
 
   <!-- MAIN TOOL -->
-  <main class="main-card">
+  <main class="main-card" id="tool-card">
 
     <!-- LEFT PANEL -->
     <section class="panel">
       <h3 style="margin:0 0 0.3rem 0; font-size:0.9rem; color:var(--text-muted);">Paste your text</h3>
-      <textarea id="inputText" class="textarea" placeholder="Paste AI-generated or class notes here…"></textarea>
+      <textarea id="inputText" class="textarea" placeholder="Paste AI-generated or class notes here…" maxlength="2000"></textarea>
 
-      <div style="text-align:right; font-size:0.78rem; color:var(--text-soft); margin-top:0.2rem;">
-        <span id="charCounter">0 / 2000 characters</span>
+      <div style="display:flex; justify-content:space-between; margin-top:0.25rem; font-size:0.78rem; color:var(--text-soft);">
+        <div id="inputError" style="color:var(--danger);"></div>
+        <div id="charCounter">0 / 2000 characters</div>
       </div>
 
       <!-- PRESETS -->
@@ -340,13 +404,15 @@
         display:none;
       "></div>
 
-      <!-- HUMANIZE BUTTON WITH COUNTER -->
+      <!-- COUNTER ABOVE BUTTON -->
+      <div id="humanizeCounterRow">
+        <span id="humanizeCounter">(0 left today)</span>
+      </div>
+
+      <!-- HUMANIZE BUTTON -->
       <button id="humanizeBtn">
         ✨ Humanize Notes
-        <span id="humanizeCounter">(2 left today)</span>
       </button>
-
-      <div id="inputError" style="color:var(--danger); font-size:0.78rem; margin-top:0.4rem;"></div>
     </section>
 
     <!-- RIGHT PANEL -->
@@ -371,7 +437,8 @@
       </div>
 
       <div style="margin-top:0.9rem; font-size:0.78rem; color:var(--text-soft);">
-        Mode used: <span id="modeUsed" style="
+        Mode used:
+        <span id="modeUsed" style="
           padding:0.15rem 0.5rem;
           border-radius:999px;
           background:#e2e8f0;
@@ -393,7 +460,7 @@
     Need more power? <a href="/pricing" style="color:var(--accent-blue); font-weight:600;">Go PRO →</a>
   </footer>
 
-  <!-- PRO EXAMPLE MODAL (ONLY ONE!) -->
+  <!-- PRO EXAMPLE MODAL -->
   <div id="proExampleModal" class="pro-modal-overlay">
     <div class="pro-modal">
       <h2 style="margin-bottom:0.4rem;">PRO Rewrite Example 🔒</h2>
@@ -444,337 +511,340 @@
       ">
         Close
       </button>
+
+      <p style="margin-top:0.6rem; font-size:0.78rem; color:#64748b; text-align:center;">
+        or <a href="/pricing" style="color:#0ea5e9; font-weight:600;">open pricing page</a> in a new tab.
+      </p>
     </div>
   </div>
 
   <!-- TOAST -->
-  <div id="toast" style="
-    position:fixed;
-    right:1.5rem;
-    bottom:1.5rem;
-    padding:0.6rem 0.9rem;
-    background:#16a34a;
-    color:white;
-    border-radius:999px;
-    opacity:0;
-    pointer-events:none;
-    transition:0.25s;
-  ">
+  <div id="toast">
     <span id="toastMessage">Copied!</span>
   </div>
-<script>
-(function initNotesHumanizer() {
 
-  /* ===============================
-      CREDIT SYSTEM CONFIG
-  =============================== */
+  <!-- APP LOGIC -->
+  <script>
+  (function initNotesHumanizer() {
 
-  const LIMITS = {
-    beforeLogin: { simple: 1, simple_words: 1 },
-    afterLogin: { simple: 2, simple_words: 2, genz: 1, exam: 1, cause_effect: 1 }
-  };
+    /* ===============================
+        CREDIT SYSTEM CONFIG
+    =============================== */
 
-  const PRO_MODES = ["genz", "exam", "cause_effect"];
+    const LIMITS = {
+      beforeLogin: { simple: 1, simple_words: 1 },
+      afterLogin: { simple: 2, simple_words: 2, genz: 1, exam: 1, cause_effect: 1 }
+    };
 
-  function loadCredits() {
-    const today = new Date().toDateString();
-    const saved = JSON.parse(localStorage.getItem("nh_credits"));
+    const PRO_MODES = ["genz", "exam", "cause_effect"];
 
-    if (!saved || saved.date !== today) {
-      const fresh = {
-        date: today,
-        beforeLogin: { ...LIMITS.beforeLogin },
-        afterLogin: { ...LIMITS.afterLogin }
-      };
-      localStorage.setItem("nh_credits", JSON.stringify(fresh));
-      return fresh;
+    function loadCredits() {
+      const today = new Date().toDateString();
+      const saved = JSON.parse(localStorage.getItem("nh_credits"));
+
+      if (!saved || saved.date !== today) {
+        const fresh = {
+          date: today,
+          beforeLogin: { ...LIMITS.beforeLogin },
+          afterLogin: { ...LIMITS.afterLogin }
+        };
+        localStorage.setItem("nh_credits", JSON.stringify(fresh));
+        return fresh;
+      }
+      return saved;
     }
-    return saved;
-  }
 
-  function saveCredits(data) {
-    localStorage.setItem("nh_credits", JSON.stringify(data));
-  }
-
-  let credits = loadCredits();
-
-  function hasCredit(preset) {
-    return window.isUserLoggedIn
-      ? credits.afterLogin[preset] > 0
-      : credits.beforeLogin[preset] > 0;
-  }
-
-  function useCredit(preset) {
-    if (window.isUserLoggedIn) {
-      credits.afterLogin[preset]--;
-    } else {
-      credits.beforeLogin[preset]--;
+    function saveCredits(data) {
+      localStorage.setItem("nh_credits", JSON.stringify(data));
     }
-    saveCredits(credits);
-  }
 
+    let credits = loadCredits();
 
-  /* ===============================
-      UI ELEMENTS
-  =============================== */
+    function getCreditsLeft(preset) {
+      const pool = window.isUserLoggedIn ? credits.afterLogin : credits.beforeLogin;
+      const val = pool && typeof pool[preset] === "number" ? pool[preset] : 0;
+      return val;
+    }
 
-  const input = document.getElementById("inputText");
-  const outputBox = document.getElementById("outputBox");
-  const outputErr = document.getElementById("outputError");
-  const presetButtons = [...document.querySelectorAll(".preset-btn")];
-  const presetPreview = document.getElementById("presetPreview");
-  const modeUsedEl = document.getElementById("modeUsed");
+    function hasCredit(preset) {
+      return getCreditsLeft(preset) > 0;
+    }
 
-  const humanizeBtn = document.getElementById("humanizeBtn");
-  const humanizeCounter = document.getElementById("humanizeCounter");
+    function useCredit(preset) {
+      if (window.isUserLoggedIn) {
+        if (typeof credits.afterLogin[preset] === "number") {
+          credits.afterLogin[preset]--;
+        }
+      } else {
+        if (typeof credits.beforeLogin[preset] === "number") {
+          credits.beforeLogin[preset]--;
+        }
+      }
+      saveCredits(credits);
+    }
 
-  let selectedPreset = "simple";
-  let outputText = "";
+    /* ===============================
+        UI ELEMENTS
+    =============================== */
 
+    const input = document.getElementById("inputText");
+    const outputBox = document.getElementById("outputBox");
+    const outputErr = document.getElementById("outputError");
+    const inputErr = document.getElementById("inputError");
+    const presetButtons = [...document.querySelectorAll(".preset-btn")];
+    const presetPreview = document.getElementById("presetPreview");
+    const modeUsedEl = document.getElementById("modeUsed");
 
-  /* ===============================
-      UPDATE CREDIT COUNTER
-  =============================== */
+    const humanizeBtn = document.getElementById("humanizeBtn");
+    const humanizeCounter = document.getElementById("humanizeCounter");
 
-  function updateCreditCounter() {
-    const left = window.isUserLoggedIn
-      ? credits.afterLogin[selectedPreset]
-      : credits.beforeLogin[selectedPreset];
+    const charCounter = document.getElementById("charCounter");
 
-    humanizeCounter.textContent = `(${left} left today)`;
-  }
+    let selectedPreset = "simple";
+    let outputText = "";
 
-  updateCreditCounter();
+    /* ===============================
+        CREDIT COUNTER DISPLAY
+    =============================== */
 
+    function updateCreditCounter() {
+      const left = getCreditsLeft(selectedPreset);
 
-  /* ===============================
-      PRESET BUTTON LOGIC
-  =============================== */
+      if (PRO_MODES.includes(selectedPreset)) {
+        if (!window.isUserLoggedIn) {
+          humanizeCounter.textContent = "(Login required for this mode)";
+        } else {
+          humanizeCounter.textContent = `(${left} PRO tries left today)`;
+        }
+      } else {
+        humanizeCounter.textContent = `(${left} left today)`;
+      }
+    }
 
-  const PRESET_DESC = {
-    simple: "Makes your text sound human and clean.",
-    simple_words: "Explains ideas in simplest possible words.",
-    exam: "Exam-style, formal school answers. (PRO Trial)",
-    genz: "Dark humour, emojis, Gen-Z tone. (PRO Trial)",
-    cause_effect: "Cause → Effect logic chain explanation. (PRO Trial)"
-  };
+    updateCreditCounter();
 
-  presetButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      selectedPreset = btn.dataset.preset;
+    /* ===============================
+        PRESET LOGIC
+    =============================== */
 
-      presetButtons.forEach(b => b.classList.remove("selected"));
-      btn.classList.add("selected");
+    const PRESET_DESC = {
+      simple: "Makes your text sound human and clean.",
+      simple_words: "Explains ideas in very simple words.",
+      exam: "Exam-style, formal school answers. (PRO Trial)",
+      genz: "Dark humour, emojis, Gen-Z tone. (PRO Trial)",
+      cause_effect: "Cause → Effect logic chain explanation. (PRO Trial)"
+    };
 
-      modeUsedEl.textContent = selectedPreset.toUpperCase();
+    presetButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        selectedPreset = btn.dataset.preset;
 
-      presetPreview.style.display = "block";
-      presetPreview.textContent = PRESET_DESC[selectedPreset];
+        presetButtons.forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
 
-      updateCreditCounter();
-    });
-  });
+        modeUsedEl.textContent = selectedPreset.toUpperCase();
 
+        presetPreview.style.display = "block";
+        presetPreview.textContent = PRESET_DESC[selectedPreset] || "";
 
-  /* ===============================
-      API CALL WRAPPER
-  =============================== */
-
-  async function callAI(preset, text) {
-    try {
-      const res = await fetch("/api/humanize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preset, userText: text })
+        updateCreditCounter();
       });
-      const data = await res.json();
-      return data.output;
-    } catch (err) {
-      return null;
-    }
-  }
+    });
 
+    /* ===============================
+        API CALL WRAPPER
+    =============================== */
 
-  /* ===============================
-      HUMANIZE BUTTON LOGIC
-  =============================== */
-
-  const exampleModal = document.getElementById("proExampleModal");
-  const exampleInput = document.getElementById("exampleInput");
-  const exampleOutput = document.getElementById("exampleOutput");
-
-  const signInOverlay = document.getElementById("sign-in");
-
-  const PRO_EXAMPLES = {
-    genz: {
-      input: "The French Revolution changed France.",
-      output: "Bruhh France woke up and chose *violence* 💀🔥. King said 'stop', people said 'no'. Now boom—revolution."
-    },
-    exam: {
-      input: "The French Revolution changed France.",
-      output: "The French Revolution brought major political, economic, and social reforms to France."
-    },
-    cause_effect: {
-      input: "Taxes increased in France.",
-      output: "Cause → Effect:\n• Higher taxes → Public anger → Protests.\n• Food prices rose → Riots.\n• Govt debt increased → Collapse of monarchy."
-    }
-  };
-
-
-  humanizeBtn.addEventListener("click", async () => {
-    outputErr.textContent = "";
-
-    const text = input.value.trim();
-    if (!text) {
-      outputErr.textContent = "Paste some text first.";
-      return;
+    async function callAI(preset, text) {
+      try {
+        const res = await fetch("/api/humanize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ preset, userText: text })
+        });
+        const data = await res.json();
+        return data.output;
+      } catch (err) {
+        console.error("API error:", err);
+        return null;
+      }
     }
 
-    // NO CREDIT AVAILABLE
-    if (!hasCredit(selectedPreset)) {
+    /* ===============================
+        HUMANIZE BUTTON
+    =============================== */
 
-      if (!window.isUserLoggedIn) {
-        // BEFORE LOGIN → Sign in popup
-        signInOverlay.style.display = "block";
+    const exampleModal = document.getElementById("proExampleModal");
+    const exampleInput = document.getElementById("exampleInput");
+    const exampleOutput = document.getElementById("exampleOutput");
+
+    const signInOverlay = document.getElementById("sign-in");
+
+    const PRO_EXAMPLES = {
+      genz: {
+        input: "The French Revolution changed France.",
+        output: "Bruhh France woke up and chose *violence* 💀🔥. King said 'stop', people said 'no'. Now boom—revolution."
+      },
+      exam: {
+        input: "The French Revolution changed France.",
+        output: "The French Revolution brought major political, economic, and social reforms to France."
+      },
+      cause_effect: {
+        input: "Taxes increased in France.",
+        output: "Cause → Effect:\n• Higher taxes → Public anger → Protests.\n• Food prices rose → Riots.\n• Govt debt increased → Collapse of monarchy."
+      }
+    };
+
+    humanizeBtn.addEventListener("click", async () => {
+      inputErr.textContent = "";
+      outputErr.textContent = "";
+
+      const text = input.value.trim();
+      if (!text) {
+        inputErr.textContent = "Paste some text first.";
         return;
       }
 
-      // AFTER LOGIN → PRO Example modal
-      const example = PRO_EXAMPLES[selectedPreset] || {
-        input: "Input text",
-        output: "Output example"
-      };
+      // NO CREDIT STATE
+      if (!hasCredit(selectedPreset)) {
+        if (!window.isUserLoggedIn) {
+          // Not logged in → open Clerk popup
+          if (window.showSignInOverlay) {
+            window.showSignInOverlay();
+          } else if (signInOverlay) {
+            signInOverlay.style.display = "block";
+          }
+          return;
+        }
 
-      exampleInput.textContent = example.input;
-      exampleOutput.textContent = example.output;
+        // Logged in → show PRO example modal
+        const example = PRO_EXAMPLES[selectedPreset] || {
+          input: "Input text",
+          output: "Output example"
+        };
+        exampleInput.textContent = example.input;
+        exampleOutput.textContent = example.output;
 
-      exampleModal.style.display = "flex";
-      return;
+        exampleModal.style.display = "flex";
+        return;
+      }
+
+      // USE CREDIT
+      useCredit(selectedPreset);
+      updateCreditCounter();
+
+      // Loading skeleton
+      outputBox.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:0.4rem;">
+          <div style="height:0.75rem; background:#e2e8f0; border-radius:999px;"></div>
+          <div style="height:0.75rem; background:#e2e8f0; border-radius:999px; width:90%;"></div>
+          <div style="height:0.75rem; background:#e2e8f0; border-radius:999px; width:80%;"></div>
+        </div>
+      `;
+
+      const result = await callAI(selectedPreset, text);
+
+      if (!result) {
+        outputErr.textContent = "Something went wrong. Try again.";
+        return;
+      }
+
+      outputText = result;
+      outputBox.innerHTML = result.replace(/\n/g, "<br>");
+    });
+
+    /* ===============================
+        COPY & DOWNLOAD
+    =============================== */
+
+    const toast = document.getElementById("toast");
+    const toastMsg = document.getElementById("toastMessage");
+
+    function showToast(msg) {
+      toastMsg.textContent = msg;
+      toast.style.opacity = 1;
+      setTimeout(() => {
+        toast.style.opacity = 0;
+      }, 1500);
     }
 
-    // USE CREDIT
-    useCredit(selectedPreset);
-    updateCreditCounter();
+    document.getElementById("copyBtn").addEventListener("click", () => {
+      navigator.clipboard.writeText(outputText || "");
+      showToast("Copied!");
+    });
 
-    // Loading skeleton
-    outputBox.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:0.4rem;">
-        <div style="height:0.75rem; background:#e2e8f0; border-radius:999px;"></div>
-        <div style="height:0.75rem; background:#e2e8f0; border-radius:999px; width:90%;"></div>
-        <div style="height:0.75rem; background:#e2e8f0; border-radius:999px; width:80%;"></div>
-      </div>
-    `;
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      const blob = new Blob([outputText || ""], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "humanized.txt";
+      link.click();
+    });
 
-    const result = await callAI(selectedPreset, text);
+    /* ===============================
+        CLOSE MODALS
+    =============================== */
 
-    if (!result) {
-      outputErr.textContent = "Something went wrong.";
-      return;
-    }
-
-    outputText = result;
-    outputBox.innerHTML = result.replace(/\n/g, "<br>");
-  });
-
-
-  /* ===============================
-      COPY & DOWNLOAD
-  =============================== */
-
-  const toast = document.getElementById("toast");
-  const toastMsg = document.getElementById("toastMessage");
-
-  function showToast(msg) {
-    toastMsg.textContent = msg;
-    toast.style.opacity = 1;
-    setTimeout(() => (toast.style.opacity = 0), 1500);
-  }
-
-  document.getElementById("copyBtn").addEventListener("click", () => {
-    navigator.clipboard.writeText(outputText || "");
-    showToast("Copied!");
-  });
-
-  document.getElementById("downloadBtn").addEventListener("click", () => {
-    const blob = new Blob([outputText || ""], { type: "text/plain" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "humanized.txt";
-    link.click();
-  });
-
-
-  /* ===============================
-      CLOSE MODALS
-  =============================== */
-
-  document.getElementById("proExampleCloseBtn").addEventListener("click", () => {
-    exampleModal.style.display = "none";
-  });
-
-  document.addEventListener("click", (e) => {
-    if (
-      exampleModal.style.display === "flex" &&
-      !exampleModal.querySelector(".pro-modal").contains(e.target)
-    ) {
+    document.getElementById("proExampleCloseBtn").addEventListener("click", () => {
       exampleModal.style.display = "none";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (
+        exampleModal.style.display === "flex" &&
+        !exampleModal.querySelector(".pro-modal").contains(e.target)
+      ) {
+        exampleModal.style.display = "none";
+      }
+
+      if (
+        signInOverlay.style.display === "block" &&
+        !document.getElementById("clerk-sign-in").contains(e.target) &&
+        e.target.id !== "openSignIn"
+      ) {
+        signInOverlay.style.display = "none";
+      }
+    });
+
+    document.getElementById("buyProBtn").addEventListener("click", () => {
+      window.location.href = "/pricing";
+    });
+
+    /* ===============================
+        CHARACTER COUNTER
+    =============================== */
+
+    input.addEventListener("input", function () {
+      const count = this.value.length;
+      charCounter.textContent = `${count} / 2000 characters`;
+    });
+
+  })();
+  </script>
+
+  <!-- ESC key + optional scroll -->
+  <script>
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        const signInOverlay = document.getElementById("sign-in");
+        const proModal = document.getElementById("proExampleModal");
+
+        if (signInOverlay && signInOverlay.style.display === "block") {
+          signInOverlay.style.display = "none";
+        }
+        if (proModal && proModal.style.display === "flex") {
+          proModal.style.display = "none";
+        }
+      }
+    });
+
+    const scrollBtn = document.getElementById("landing-scroll-btn");
+    if (scrollBtn) {
+      scrollBtn.addEventListener("click", () => {
+        document.getElementById("tool-card")?.scrollIntoView({ behavior: "smooth" });
+      });
     }
-
-    if (
-      signInOverlay.style.display === "block" &&
-      !document.getElementById("clerk-sign-in").contains(e.target) &&
-      e.target.id !== "openSignIn"
-    ) {
-      signInOverlay.style.display = "none";
-    }
-  });
-
-
-  /* ===============================
-      BUY PRO BTN
-  =============================== */
-
-  document.getElementById("buyProBtn").addEventListener("click", () => {
-    window.location.href = "/pricing";
-  });
-
-
-})();
-</script>
-<script>
-/* ===============================
-   FINAL SAFETY HANDLERS
-=============================== */
-
-/* Character Counter */
-document.getElementById("inputText").addEventListener("input", function () {
-  const count = this.value.length;
-  document.getElementById("charCounter").textContent = `${count} / 2000 characters`;
-});
-
-/* Smooth Scroll from Landing (if you add landing later) */
-const scrollBtn = document.getElementById("landing-scroll-btn");
-if (scrollBtn) {
-  scrollBtn.addEventListener("click", () => {
-    document.getElementById("tool-card")?.scrollIntoView({ behavior: "smooth" });
-  });
-}
-
-/* Ensure modals close on ESC key */
-document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
-    const signInOverlay = document.getElementById("sign-in");
-    const proModal = document.getElementById("proExampleModal");
-
-    if (signInOverlay.style.display === "block") {
-      signInOverlay.style.display = "none";
-    }
-    if (proModal.style.display === "flex") {
-      proModal.style.display = "none";
-    }
-  }
-});
-</script>
+  </script>
 
 </body>
 </html>
