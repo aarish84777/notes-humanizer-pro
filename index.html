@@ -1080,260 +1080,215 @@
   </div>
 
   <!-- APP LOGIC -->
-  <script>
-    (function initNotesHumanizerApp() {
-      const MAX_CHARS = 2000;
-      const PRO_MODES = ["exam", "genz", "cause_effect"];
+<script>
+(function initCreditSystemApp() {
 
-      const inputTextEl = document.getElementById("inputText");
-      const inputErrorEl = document.getElementById("inputError");
-      const charCounterEl = document.getElementById("charCounter");
-      const outputBoxEl = document.getElementById("outputBox");
-      const outputErrorEl = document.getElementById("outputError");
-      const humanizeBtnEl = document.getElementById("humanizeBtn");
-      const modeUsedEl = document.getElementById("modeUsed");
-      const copyBtnEl = document.getElementById("copyBtn");
-      const downloadBtnEl = document.getElementById("downloadBtn");
-      const presetButtons = Array.from(document.querySelectorAll(".preset-btn"));
-      const toastEl = document.getElementById("toast");
-      const toastMessageEl = document.getElementById("toastMessage");
-      const presetPreviewEl = document.getElementById("presetPreview");
-      const proModal = document.getElementById("proModal");
-      const proCloseBtn = document.getElementById("proCloseBtn");
-      const proExampleModal = document.getElementById("proExampleModal");
-      const proExampleCloseBtn = document.getElementById("proExampleCloseBtn");
-      const buyProBtn = document.getElementById("buyProBtn");
-      const landingBtn = document.getElementById("landing-scroll-btn");
+  /* -----------------------------
+      GLOBAL CREDIT LIMITS
+     ----------------------------- */
 
-      let selectedPreset = "simple";
-      let outputText = "";
+  const LIMITS = {
+    beforeLogin: {
+      simple: 1,            // 1 free use of "Simple Humanizer"
+      simple_words: 1,      // 1 free use of "Easy Words"
+    },
+    afterLogin: {
+      simple: 2,            // 2 humans
+      simple_words: 2,      // 2 easy words
+      genz: 1,              // 1 PRO mode test
+      exam: 1,              // 1 PRO mode test
+      cause_effect: 1       // 1 PRO mode test
+    }
+  };
 
-      const PREVIEW_TEXT = {
-        simple: "Makes your text sound natural, smooth and clean. Perfect for rewriting AI-like sentences.",
-        simple_words: "Explains everything like you are 10. Very easy words and simple lines.",
-        exam: "Turns your notes into exam-style answers: direct, structured and school-friendly. (PRO)",
-        genz: "Adds Gen-Z tone, emojis 😭🔥, dark humour and casual vibe. (PRO)",
-        cause_effect: "Converts lines into cause → effect → result chains. Amazing for History/Science. (PRO)"
+  const PRO_MODES = ["exam", "genz", "cause_effect"];
+
+  /* -----------------------------
+      READ / WRITE LOCAL STORAGE
+     ----------------------------- */
+
+  function loadCredits() {
+    const today = new Date().toDateString();
+    const saved = JSON.parse(localStorage.getItem("credit_system"));
+
+    if (!saved || saved.date !== today) {
+      // Reset daily credits
+      const fresh = {
+        date: today,
+        beforeLogin: { ...LIMITS.beforeLogin },
+        afterLogin: { ...LIMITS.afterLogin }
       };
 
-      function showToast(message) {
-        if (!toastEl || !toastMessageEl) return;
-        toastMessageEl.textContent = message;
-        toastEl.classList.add("show");
-        setTimeout(() => toastEl.classList.remove("show"), 1600);
+      localStorage.setItem("credit_system", JSON.stringify(fresh));
+      return fresh;
+    }
+
+    return saved;
+  }
+
+  function saveCredits(data) {
+    localStorage.setItem("credit_system", JSON.stringify(data));
+  }
+
+  let credits = loadCredits();
+
+  /* -----------------------------
+      USE 1 CREDIT
+     ----------------------------- */
+
+  function useCredit(preset) {
+    const loggedIn = window.isUserLoggedIn;
+
+    if (!loggedIn) {
+      if (credits.beforeLogin[preset] > 0) {
+        credits.beforeLogin[preset] -= 1;
+        saveCredits(credits);
+        return true;
       }
+      return false;
+    }
 
-      if (inputTextEl && charCounterEl) {
-        inputTextEl.addEventListener("input", () => {
-          const len = inputTextEl.value.length;
-          charCounterEl.textContent = `${len} / ${MAX_CHARS} characters`;
-        });
-      }
+    if (credits.afterLogin[preset] > 0) {
+      credits.afterLogin[preset] -= 1;
+      saveCredits(credits);
+      return true;
+    }
 
-      presetButtons.forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          const button = e.currentTarget;
-          selectedPreset = button.dataset.preset || "simple";
-          modeUsedEl.textContent = selectedPreset.toUpperCase();
+    return false;
+  }
 
-          presetButtons.forEach((b) => b.classList.remove("selected"));
-          button.classList.add("selected");
+  /* -----------------------------
+      CHECK IF USER HAS CREDIT
+     ----------------------------- */
 
-          if (presetPreviewEl) {
-            presetPreviewEl.style.display = "block";
-            presetPreviewEl.textContent = PREVIEW_TEXT[selectedPreset] || "";
-          }
+  function hasCredit(preset) {
+    if (!window.isUserLoggedIn) {
+      return credits.beforeLogin[preset] > 0;
+    }
+    return credits.afterLogin[preset] > 0;
+  }
 
-          const labelEl = document.getElementById("humanizeBtnLabel");
-          if (labelEl) {
-            if (window.isUserLoggedIn && PRO_MODES.includes(selectedPreset)) {
-              labelEl.textContent = "Humanize (PRO)";
-            } else {
-              labelEl.textContent = "Humanize Notes";
-            }
-          }
-        });
+  /* -----------------------------
+      GET UI ELEMENTS
+     ----------------------------- */
+
+  const input = document.getElementById("inputText");
+  const humanizeBtn = document.getElementById("humanizeBtn");
+  const modeUsedEl = document.getElementById("modeUsed");
+  const outputBox = document.getElementById("outputBox");
+  const outputErr = document.getElementById("outputError");
+  const presetButtons = Array.from(document.querySelectorAll(".preset-btn"));
+  const presetPreview = document.getElementById("presetPreview");
+  const toast = document.getElementById("toast");
+  const toastMsg = document.getElementById("toastMessage");
+
+  let selectedPreset = "simple";
+  let outputText = "";
+
+  /* -----------------------------
+      PRESET SELECTOR
+     ----------------------------- */
+
+  const PRESET_DESC = {
+    simple: "Makes your text sound natural and clean.",
+    simple_words: "Explains everything like you're 10.",
+    exam: "Exam-style answers (PRO test).",
+    genz: "Gen Z tone 😭🔥 (PRO test).",
+    cause_effect: "Cause → Effect logic chain (PRO test)."
+  };
+
+  presetButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedPreset = btn.dataset.preset;
+      presetButtons.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+
+      presetPreview.style.display = "block";
+      presetPreview.textContent = PRESET_DESC[selectedPreset];
+
+      modeUsedEl.textContent = selectedPreset.toUpperCase();
+    });
+  });
+
+  /* -----------------------------
+      TOAST
+     ----------------------------- */
+  function showToast(msg) {
+    toastMsg.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 1600);
+  }
+
+  /* -----------------------------
+      API CALL
+     ----------------------------- */
+  async function callAI(preset, text) {
+    try {
+      const res = await fetch("/api/humanize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preset, userText: text })
       });
+      const data = await res.json();
+      return data.output || null;
+    } catch (e) {
+      return null;
+    }
+  }
 
-      function setLoading() {
-        outputBoxEl.innerHTML = `
-          <div class="output-loading">
-            <div class="skeleton-line"></div>
-            <div class="skeleton-line"></div>
-            <div class="skeleton-line"></div>
-            <div class="skeleton-line"></div>
-          </div>`;
-        outputErrorEl.textContent = "";
+  /* -----------------------------
+      HUMANIZE CLICK
+     ----------------------------- */
+
+  humanizeBtn.addEventListener("click", async () => {
+    outputErr.textContent = "";
+    const txt = input.value.trim();
+
+    if (!txt) {
+      outputErr.textContent = "Paste some text first.";
+      return;
+    }
+
+    // PRO mode gating
+    if (PRO_MODES.includes(selectedPreset)) {
+      if (!window.isUserLoggedIn) {
+        document.getElementById("proModal").style.display = "flex";
+        return;
       }
+    }
 
-      function setOutput(text) {
-        if (!text) {
-          outputBoxEl.innerHTML = '<div class="output-placeholder">Nothing returned…</div>';
-          return;
-        }
-        outputBoxEl.innerHTML = text.replace(/\n/g, "<br>");
-      }
+    // CREDIT check
+    if (!hasCredit(selectedPreset)) {
+      document.getElementById("proExampleModal").style.display = "flex";
+      return;
+    }
 
-      async function callAI(preset, text) {
-        try {
-          const res = await fetch("/api/humanize", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ preset, userText: text }),
-          });
-          if (!res.ok) {
-            console.error("API error status:", res.status);
-            return null;
-          }
-          const data = await res.json();
-          return data.output || null;
-        } catch (err) {
-          console.error("callAI failed:", err);
-          return null;
-        }
-      }
+    // USE a credit now
+    useCredit(selectedPreset);
 
-      function showProExample(mode) {
-        const examples = {
-          exam: {
-            input: "France had many political and social problems before 1789.",
-            output:
-              "1. Introduction: France faced severe political & social instability.\n" +
-              "2. Causes: Inequality, rising taxes & weak leadership.\n" +
-              "3. Conclusion: These issues led to the French Revolution."
-          },
-          genz: {
-            input: "The French Revolution changed France.",
-            output: "Bruhh the whole country said 'nah fam' to the king 😭🔥. People were done with the nonsense and hard-reset France 💀."
-          },
-          cause_effect: {
-            input: "Taxes increased in France.",
-            output:
-              "Cause → Effect → Result:\n" +
-              "• High taxes → people angry → protests.\n" +
-              "• Food prices ↑ → riots.\n" +
-              "• Govt debt → collapse of monarchy."
-          }
-        };
+    // Loading skeleton
+    outputBox.innerHTML = `
+      <div class="output-loading">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+      </div>
+    `;
 
-        const ex = examples[mode];
-        if (!ex) return;
+    const result = await callAI(selectedPreset, txt);
 
-        const inputBox = document.getElementById("exampleInput");
-        const outputBox = document.getElementById("exampleOutput");
+    if (!result) {
+      outputErr.textContent = "Something went wrong.";
+      return;
+    }
 
-        if (inputBox && outputBox) {
-          inputBox.innerHTML = `<b>Input:</b><br>${ex.input}`;
-          outputBox.innerHTML = `<b>PRO Output:</b><br>${ex.output}`;
-        }
+    outputText = result;
+    outputBox.innerHTML = result.replace(/\n/g, "<br>");
+  });
 
-        if (proExampleModal) proExampleModal.style.display = "flex";
-      }
+})();
+</script>
 
-      function openProModal() {
-        if (proModal) proModal.style.display = "flex";
-      }
-
-      if (proCloseBtn) {
-        proCloseBtn.addEventListener("click", () => {
-          if (proModal) proModal.style.display = "none";
-        });
-      }
-
-      if (proExampleCloseBtn) {
-        proExampleCloseBtn.addEventListener("click", () => {
-          if (proExampleModal) proExampleModal.style.display = "none";
-        });
-      }
-
-      if (buyProBtn) {
-        buyProBtn.addEventListener("click", () => {
-          window.location.href = "#"; // replace with Stripe URL later
-        });
-      }
-
-      if (humanizeBtnEl) {
-        humanizeBtnEl.addEventListener("click", async () => {
-          const raw = inputTextEl.value.trim();
-          inputErrorEl.textContent = "";
-          outputErrorEl.textContent = "";
-
-          if (!raw) {
-            inputErrorEl.textContent = "Paste some text first.";
-            return;
-          }
-
-          // Gate PRO modes: require login
-          if (PRO_MODES.includes(selectedPreset) && !window.isUserLoggedIn) {
-            showProExample(selectedPreset);
-            openProModal();
-            return;
-          }
-
-          setLoading();
-          humanizeBtnEl.disabled = true;
-
-          const result = await callAI(selectedPreset, raw);
-
-          humanizeBtnEl.disabled = false;
-
-          if (!result) {
-            outputErrorEl.textContent = "Something went wrong. Try again.";
-            setOutput("");
-            return;
-          }
-
-          outputText = result;
-          setOutput(result);
-        });
-      }
-
-      if (copyBtnEl) {
-        copyBtnEl.addEventListener("click", async () => {
-          if (!outputText) {
-            showToast("Nothing to copy.");
-            return;
-          }
-          try {
-            await navigator.clipboard.writeText(outputText);
-            showToast("Copied to clipboard.");
-          } catch (err) {
-            console.error("Copy failed:", err);
-            showToast("Copy not supported.");
-          }
-        });
-      }
-
-      if (downloadBtnEl) {
-        downloadBtnEl.addEventListener("click", () => {
-          if (!outputText) {
-            showToast("Nothing to download.");
-            return;
-          }
-          const blob = new Blob([outputText], { type: "text/plain;charset=utf-8" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "notes-humanized.txt";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          showToast("Downloaded .txt file.");
-        });
-      }
-
-      // Scroll from landing to tool
-      if (landingBtn) {
-        landingBtn.addEventListener("click", () => {
-          const tool = document.getElementById("tool-card");
-          if (tool) tool.scrollIntoView({ behavior: "smooth" });
-        });
-      }
-
-      modeUsedEl.textContent = "SIMPLE";
-    })();
-  </script>
 <script>
 // Close overlay when clicking outside the sign-in box
 document.addEventListener("click", function (e) {
