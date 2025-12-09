@@ -504,7 +504,12 @@ function openOverlay() {
     setTimeout(() => overlay.style.opacity = "1", 20);
 
     if (window.Clerk && !signInBox.hasChildNodes()) {
-        window.Clerk.mountSignIn(signInBox, { appearance: { baseTheme: "light" } });
+window.Clerk.mountSignIn(signInBox, {
+  afterSignInUrl: window.location.href,
+  afterSignUpUrl: window.location.href,
+  appearance: { baseTheme: "light" }
+});
+
     }
 }
 
@@ -546,7 +551,13 @@ window.addEventListener("load", async () => {
                 if (signInBtn2) signInBtn2.style.display = "none";
 
                 // Show Clerk user button
-                window.Clerk.mountUserButton(userButtonContainer);
+window.Clerk.mountUserButton(userButtonContainer, {
+  afterSignInUrl: window.location.href,
+  afterSignUpUrl: window.location.href,
+  afterSignOutUrl: window.location.href,
+  appearance: { baseTheme: "light" }
+});
+
             } else {
                 // User logged out → show Sign In buttons
                 if (signInBtn) signInBtn.style.display = "inline-block";
