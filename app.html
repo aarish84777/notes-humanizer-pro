@@ -127,172 +127,224 @@ window.showSignInOverlay = function (e) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- CSS -->
-  /* ============================================================
-      CYBERPUNK DARK MODE — ONLY CSS CHANGED, NOTHING ELSE
-============================================================ */
+  <style>
+    :root {
+      --accent-blue: #0ea5e9;
+      --accent-green: #22c55e;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-soft: #94a3b8;
+      --danger: #ef4444;
+      --shadow-btn: 0 16px 40px rgba(8, 47, 73, 0.45);
+    }
 
-:root {
-  --accent-blue: #00eaff;
-  --accent-green: #0aff9d;
-  --accent-pink: #ff00c8;
-  --accent-purple: #8a2eff;
+    * {
+      box-sizing: border-box;
+    }
 
-  --bg-dark: #050011;
-  --bg-panel: rgba(20, 10, 40, 0.6);
-  --bg-soft: rgba(30, 20, 50, 0.6);
+    body {
+      font-family: "Inter", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top left, #e0f2fe 0, #f9fafb 45%, #eef2ff 100%);
+      color: var(--text-main);
+    }
 
-  --text-main: #e2e8f0;
-  --text-muted: #8893a7;
-  --text-soft: #6b7280;
+    /* NAVBAR */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.4rem;
+      background: white;
+      border-radius: 1rem;
+      margin: 1rem auto;
+      max-width: 1120px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      position: sticky;
+      top: 1rem;
+      z-index: 10;
+    }
 
-  --danger: #ff3b63;
-  --neon-shadow: 0 0 12px rgba(0, 255, 255, 0.7);
-  --neon-shadow-green: 0 0 12px rgba(0, 255, 150, 0.7);
-}
+    #openSignIn {
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+      color: white;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
 
-/* GLOBAL */
-body {
-  font-family: "Inter", sans-serif;
-  margin: 0;
-  padding: 0;
-  background: radial-gradient(circle at top left,
-    #100026 0%,
-    #050011 45%,
-    #020008 100%
-  );
-  color: var(--text-main);
-}
+    /* MAIN TOOL LAYOUT */
+    .main-card {
+      max-width: 1120px;
+      margin: 2rem auto;
+      background: white;
+      padding: 1.4rem;
+      border-radius: 1.4rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
+    }
 
-/* NAVBAR */
-.nav {
-  background: rgba(10, 3, 30, 0.7);
-  border: 1px solid rgba(0, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  border-radius: 1rem;
-  box-shadow: 0 0 22px rgba(0, 255, 255, 0.15);
-}
+    @media (max-width: 900px) {
+      .main-card {
+        grid-template-columns: 1fr;
+      }
+    }
 
-#openSignIn {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
-  color: #000;
-  border: none;
-  box-shadow: var(--neon-shadow);
-}
+    .panel {
+      background: rgba(248, 250, 252, 0.9);
+      padding: 1rem;
+      border-radius: 1rem;
+      border: 1px solid #e2e8f0;
+    }
 
-/* MAIN CARD */
-.main-card {
-  background: rgba(8, 4, 20, 0.75);
-  border: 1px solid rgba(255, 0, 200, 0.25);
-  box-shadow: 0 0 30px rgba(255, 0, 200, 0.15);
-  backdrop-filter: blur(10px);
-}
+    .textarea {
+      width: 100%;
+      min-height: 180px;
+      border-radius: 0.8rem;
+      padding: 0.8rem;
+      border: 1px solid #cbd5e1;
+      font-size: 0.95rem;
+      resize: vertical;
+      outline: none;
+    }
 
-/* PANELS */
-.panel {
-  background: var(--bg-panel);
-  border: 1px solid rgba(0, 255, 255, 0.18);
-  box-shadow: 0 0 25px rgba(0, 255, 255, 0.08);
-}
+    .textarea:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.4);
+    }
 
-/* TEXTAREA */
-.textarea {
-  background: var(--bg-soft);
-  border: 1px solid rgba(138, 46, 255, 0.35);
-  color: var(--text-main);
-}
+    .preset-btn {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      padding: 0.6rem 0.9rem;
+      background: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      cursor: pointer;
+      gap: 0.4rem;
+    }
 
-.textarea:focus {
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 12px rgba(138, 46, 255, 0.6);
-}
+    .preset-btn.selected {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+      color: white;
+      border: none;
+      box-shadow: 0 10px 24px rgba(14, 165, 233, 0.5);
+    }
 
-/* PRESET BUTTONS */
-.preset-btn {
-  background: rgba(15, 8, 35, 0.7);
-  border: 1px solid rgba(0, 255, 255, 0.25);
-  color: var(--text-main);
-}
+    .preset-pro-pill {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid #facc15;
+      color: #f59e0b;
+      background: #fffbeb;
+      font-weight: 600;
+    }
 
-.preset-btn.selected {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
-  color: #000;
-  box-shadow: 0 0 16px rgba(0, 255, 255, 0.6);
-}
+    /* HUMANIZE BUTTON */
+    #humanizeBtn {
+      margin-top: 0.4rem;
+      width: 100%;
+      border-radius: 999px;
+      padding: 0.8rem 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      box-shadow: var(--shadow-btn);
+    }
 
-.preset-pro-pill {
-  background: rgba(255, 255, 0, 0.2);
-  border-color: #ff0;
-}
+    #humanizeCounterRow {
+      margin-top: 0.8rem;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      text-align: right;
+    }
 
-/* HUMANIZE BUTTON */
-#humanizeBtn {
-  background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
-  color: #000;
-  border: none;
-  box-shadow: 0 0 20px rgba(0, 255, 150, 0.45);
-}
+    /* OUTPUT */
+    .output-box {
+      min-height: 180px;
+      background: white;
+      border-radius: 0.8rem;
+      padding: 0.8rem;
+      border: 1px solid #cbd5e1;
+      overflow-y: auto;
+      font-size: 0.93rem;
+      line-height: 1.5;
+    }
 
-/* OUTPUT BOX */
-.output-box {
-  background: rgba(10, 5, 30, 0.65);
-  border: 1px solid rgba(0, 255, 255, 0.25);
-  color: var(--text-main);
-}
-
-/* MODALS */
+    /* MODALS */
 .pro-modal-overlay {
-  background: rgba(0, 0, 20, 0.7) !important;
-  backdrop-filter: blur(12px) !important;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(6px) !important;
+  display: none ;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important;
 }
+
 
 .pro-modal {
-  background: rgba(12, 6, 38, 0.9) !important;
-  border: 1px solid rgba(255, 0, 200, 0.25) !important;
-  color: var(--text-main) !important;
-  box-shadow: 0 0 40px rgba(255, 0, 200, 0.3) !important;
+  background: white !important;
+  padding: 1.6rem !important;
+  border-radius: 1rem !important;
+  max-width: 500px !important;
+  width: 90% !important;
+  box-shadow: 0 24px 40px rgba(15,23,42,0.22) !important;
+  position: relative !important;
+  z-index: 9999999 !important;
 }
 
-#exampleInput {
-  background: rgba(20, 10, 45, 0.6) !important;
-  border: 1px solid rgba(0, 255, 255, 0.25);
-  color: var(--text-main) !important;
-}
 
-#exampleOutput {
-  background: rgba(20, 10, 45, 0.6) !important;
-  border: 1px solid rgba(0, 255, 150, 0.25);
-  color: var(--text-main) !important;
-}
+    /* TOAST */
+    #toast {
+      position: fixed;
+      right: 1.5rem;
+      bottom: 1.5rem;
+      padding: 0.6rem 0.9rem;
+      background: #16a34a;
+      color: white;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.25s;
+      font-size: 0.8rem;
+    }
+  
+    /* --- Clerk popup animation --- */
 
-/* COPY & DOWNLOAD */
-#copyBtn,
-#downloadBtn {
-  background: rgba(15, 8, 35, 0.8);
-  border: 1px solid rgba(138, 46, 255, 0.3);
-  color: var(--text-main);
-}
-
-#copyBtn:hover,
-#downloadBtn:hover {
-  box-shadow: var(--neon-shadow-green);
-}
-
-/* MODE TAG */
-#modeUsed {
-  background: rgba(0, 255, 255, 0.2);
-  color: var(--accent-blue);
-  border: 1px solid rgba(0, 255, 255, 0.35);
-}
-
-/* FOOTER */
-footer {
-  color: var(--text-muted);
-}
-
-/* SIGN-IN OVERLAY */
 #sign-in {
-  background: rgba(0, 0, 10, 0.7);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
+
+#sign-in.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+  
+  </style>
 </head>
 
 <body>
