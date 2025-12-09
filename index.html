@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Hello Aarish</title>
+  <title>Clarytiq AI — Fix Your NPC Notes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Clerk Auth -->
@@ -13,11 +13,9 @@
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
   </script>
 
-  <!-- Global Auth State + Clerk wiring -->
   <script>
     window.isUserLoggedIn = false;
 
-    // Update navbar + PRO pills
     window.updateAuthUI = function () {
       const signInBtn = document.getElementById("openSignIn");
       const userBtnContainer = document.getElementById("clerk-user-button");
@@ -31,17 +29,6 @@
         signInBtn.style.display = "inline-flex";
         userBtnContainer.style.display = "none";
       }
-
-      // Lock/unlock PRO labels visually
-      const proButtons = document.querySelectorAll(
-        '.preset-btn[data-preset="exam"], .preset-btn[data-preset="genz"], .preset-btn[data-preset="cause_effect"]'
-      );
-
-      proButtons.forEach(btn => {
-        const pill = btn.querySelector(".preset-pro-pill");
-        if (!pill) return;
-        pill.style.display = window.isUserLoggedIn ? "none" : "inline-flex";
-      });
     };
 
     window.addEventListener("load", async () => {
@@ -52,29 +39,9 @@
 
       // Global helper to open Clerk sign-in
       window.showSignInOverlay = function (e) {
-  e?.stopPropagation();   // <-- ADD THIS
-
-window.showSignInOverlay = function (e) {
-  e?.stopPropagation();
-
-  if (!signInOverlay) return;
-
-  // 1. Show instantly
-  signInOverlay.style.display = "block";
-
-  // 2. THEN animate (important)
-  setTimeout(() => {
-    signInOverlay.classList.add("show");
-  }, 10);
-
-  if (window.Clerk && signInBox && !signInBox.hasChildNodes()) {
-    window.Clerk.mountSignIn(signInBox, {
-      appearance: { baseTheme: "light" }
-    });
-  }
-};
-
-
+        e?.stopPropagation();
+        signInOverlay.style.display = "block";
+        setTimeout(() => signInOverlay.classList.add("show"), 10);
 
         if (window.Clerk && signInBox && !signInBox.hasChildNodes()) {
           window.Clerk.mountSignIn(signInBox, {
@@ -85,22 +52,17 @@ window.showSignInOverlay = function (e) {
 
       if (openSignInBtn) {
         openSignInBtn.addEventListener("click", (e) => {
-  e.stopPropagation();  // <-- ADD THIS
-  window.showSignInOverlay();
-});
-
+          e.stopPropagation();
+          window.showSignInOverlay();
+        });
       }
 
-      if (!window.Clerk) {
-        console.warn("Clerk not loaded yet");
-        return;
-      }
+      if (!window.Clerk) return;
 
       try {
         await window.Clerk.load();
 
         const emit = () => {
-          // user is null when signed out, object with id when signed in
           const user = window.Clerk.user;
           window.isUserLoggedIn = !!(user && user.id);
           window.updateAuthUI();
@@ -111,7 +73,7 @@ window.showSignInOverlay = function (e) {
 
         if (userBtnContainer) {
           window.Clerk.mountUserButton(userBtnContainer, {
-            afterSignOutUrl: window.location.href,
+            afterSignOutUrl: "/",
             appearance: { baseTheme: "light" }
           });
         }
@@ -124,46 +86,34 @@ window.showSignInOverlay = function (e) {
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- CSS -->
   <style>
     :root {
       --accent-blue: #0ea5e9;
       --accent-green: #22c55e;
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --text-soft: #94a3b8;
-      --danger: #ef4444;
-      --shadow-btn: 0 16px 40px rgba(8, 47, 73, 0.45);
-    }
-
-    * {
-      box-sizing: border-box;
     }
 
     body {
-      font-family: "Inter", sans-serif;
       margin: 0;
-      padding: 0;
+      font-family: "Inter", sans-serif;
       background: radial-gradient(circle at top left, #e0f2fe 0, #f9fafb 45%, #eef2ff 100%);
       color: var(--text-main);
     }
 
     /* NAVBAR */
     .nav {
+      max-width: 1120px;
+      margin: 1rem auto;
+      padding: 1rem 1.4rem;
+      border-radius: 1rem;
+      background: white;
+      box-shadow: 0 12px 30px rgba(15,23,42,0.08);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1.4rem;
-      background: white;
-      border-radius: 1rem;
-      margin: 1rem auto;
-      max-width: 1120px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-      position: sticky;
-      top: 1rem;
-      z-index: 10;
     }
 
     #openSignIn {
@@ -174,197 +124,165 @@ window.showSignInOverlay = function (e) {
       font-weight: 600;
       border: none;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
     }
 
-    /* MAIN TOOL LAYOUT */
-    .main-card {
-      max-width: 1120px;
-      margin: 2rem auto;
-      background: white;
-      padding: 1.4rem;
-      border-radius: 1.4rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.2rem;
-      box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
-    }
-
-    @media (max-width: 900px) {
-      .main-card {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .panel {
-      background: rgba(248, 250, 252, 0.9);
+    /* HERO SECTION */
+    .hero {
+      text-align: center;
+      margin-top: 3rem;
       padding: 1rem;
-      border-radius: 1rem;
-      border: 1px solid #e2e8f0;
     }
 
-    .textarea {
-      width: 100%;
-      min-height: 180px;
-      border-radius: 0.8rem;
-      padding: 0.8rem;
-      border: 1px solid #cbd5e1;
-      font-size: 0.95rem;
-      resize: vertical;
-      outline: none;
+    .hero h1 {
+      font-size: clamp(2.4rem, 4vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.2;
     }
 
-    .textarea:focus {
-      border-color: var(--accent-blue);
-      box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.4);
+    .hero p {
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 1rem auto;
+      font-size: 1.1rem;
     }
 
-    .preset-btn {
-      width: 100%;
-      border-radius: 999px;
-      border: 1px solid #cbd5e1;
-      padding: 0.6rem 0.9rem;
-      background: white;
+    .hero-buttons {
+      margin-top: 1.5rem;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      cursor: pointer;
-      gap: 0.4rem;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
-    .preset-btn.selected {
+    .btn-main {
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
       background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
       color: white;
-      border: none;
-      box-shadow: 0 10px 24px rgba(14, 165, 233, 0.5);
-    }
-
-    .preset-pro-pill {
-      font-size: 0.7rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 999px;
-      border: 1px solid #facc15;
-      color: #f59e0b;
-      background: #fffbeb;
-      font-weight: 600;
-    }
-
-    /* HUMANIZE BUTTON */
-    #humanizeBtn {
-      margin-top: 0.4rem;
-      width: 100%;
-      border-radius: 999px;
-      padding: 0.8rem 1rem;
-      font-size: 1rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #0ea5e9, #22c55e);
-      color: white;
       border: none;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
-      box-shadow: var(--shadow-btn);
+      box-shadow: 0 10px 30px rgba(14,165,233,0.35);
     }
 
-    #humanizeCounterRow {
-      margin-top: 0.8rem;
-      font-size: 0.78rem;
-      color: var(--text-soft);
-      text-align: right;
-    }
-
-    /* OUTPUT */
-    .output-box {
-      min-height: 180px;
+    .btn-outline {
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      border: 2px solid var(--accent-blue);
+      color: var(--accent-blue);
+      font-weight: 700;
       background: white;
-      border-radius: 0.8rem;
-      padding: 0.8rem;
-      border: 1px solid #cbd5e1;
-      overflow-y: auto;
-      font-size: 0.93rem;
+      cursor: pointer;
+    }
+
+    /* PAIN CARDS */
+    .pain-section {
+      max-width: 1120px;
+      margin: 4rem auto;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .pain-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .pain-card {
+      padding: 1.4rem;
+      border-radius: 1rem;
+      background: white;
+      box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+      font-size: 0.95rem;
       line-height: 1.5;
     }
 
-    /* MODALS */
-.pro-modal-overlay {
-  position: fixed !important;
-  inset: 0 !important;
-  background: rgba(15, 23, 42, 0.45) !important;
-  backdrop-filter: blur(6px) !important;
-  display: none ;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 999999 !important;
-}
-
-
-.pro-modal {
-  background: white !important;
-  padding: 1.6rem !important;
-  border-radius: 1rem !important;
-  max-width: 500px !important;
-  width: 90% !important;
-  box-shadow: 0 24px 40px rgba(15,23,42,0.22) !important;
-  position: relative !important;
-  z-index: 9999999 !important;
-}
-
-
-    /* TOAST */
-    #toast {
-      position: fixed;
-      right: 1.5rem;
-      bottom: 1.5rem;
-      padding: 0.6rem 0.9rem;
-      background: #16a34a;
-      color: white;
-      border-radius: 999px;
-      opacity: 0;
-      pointer-events: none;
-      transition: 0.25s;
-      font-size: 0.8rem;
+    /* MODES */
+    .modes {
+      max-width: 1120px;
+      margin: 4rem auto;
+      padding: 1rem;
+      text-align: center;
     }
-  
-    /* --- Clerk popup animation --- */
 
-#sign-in {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
+    .mode-list {
+      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
 
-#sign-in.show {
-  opacity: 1;
-  transform: translateY(0);
-}
+    .mode-item {
+      background: white;
+      padding: 1.4rem;
+      border-radius: 1rem;
+      box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+    }
 
-  
+    /* PRICING */
+    .pricing {
+      max-width: 1120px;
+      margin: 4rem auto;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .price-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .price-card {
+      background: white;
+      padding: 1.4rem;
+      border-radius: 1rem;
+      box-shadow: 0 12px 30px rgba(15,23,42,0.1);
+    }
+
+    /* FOOTER */
+    footer {
+      margin-top: 4rem;
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+    }
+
+    /* SIGN-IN POPUP */
+    #sign-in {
+      opacity: 0;
+      transform: translateY(20px);
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.45);
+      backdrop-filter: blur(6px);
+      transition: 0.35s ease;
+      z-index: 9999;
+      padding-top: 4rem;
+    }
+
+    #sign-in.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 
 <body>
 
   <!-- Clerk Sign-In Overlay -->
-  <div id="sign-in" style="
-    display:none;
-    position: fixed;
-    inset: 0;
-    background: rgba(15,23,42,0.45);
-    backdrop-filter: blur(6px);
-    z-index: 9999;
-    padding-top: 4rem;
-  ">
+  <div id="sign-in">
     <div id="clerk-sign-in" style="max-width: 360px; margin: auto;"></div>
   </div>
 
   <!-- NAVBAR -->
   <header class="nav">
-    <div style="font-weight:800; font-size:1.1rem;">Hello Aarish</div>
+    <div style="font-weight:800; font-size:1.1rem;">Clarytiq AI</div>
+
     <div style="display:flex; align-items:center; gap:0.8rem;">
       <button id="openSignIn">Sign In ⚡</button>
       <div id="clerk-user-button" style="display:none;"></div>
@@ -372,594 +290,93 @@ window.showSignInOverlay = function (e) {
   </header>
 
   <!-- HERO -->
-  <section style="text-align:center; margin-top:2rem;">
-    <h1 style="
-      font-size:clamp(2.2rem,4vw,2.8rem);
-      font-weight:800;
-      margin-bottom:0.5rem;
-      color:#020617;
-    ">
-      Turn robotic notes into <span style="color:var(--accent-blue);">human text.</span>
-    </h1>
+  <section class="hero">
+    <h1>“Your notes sound like a robot had a stroke.”</h1>
+    <p>Clarytiq AI rewrites your stiff, boring, NPC notes into clean, simple, exam-ready human text. No cringe. No headache. No robotic vibes.</p>
 
-    <p style="color:var(--text-muted); font-size:1rem; max-width:580px; margin:0 auto;">
-      Paste your text, choose a mode, and get natural, exam-ready notes within seconds.
+    <div class="hero-buttons">
+      <a href="/app.html"><button class="btn-main">✨ Try It Free</button></a>
+      <button id="openSignIn" class="btn-outline">Sign In</button>
+    </div>
+
+    <p style="margin-top:1rem; color:#475569; font-size:0.9rem;">
+      Transform your notes before they transform you into a dropout 💀🔥.
     </p>
   </section>
 
-  <!-- MAIN TOOL -->
-  <main class="main-card" id="tool-card">
+  <!-- PAIN SECTION -->
+  <section class="pain-section">
+    <h2 style="font-size:1.8rem; font-weight:800;">Let’s be honest… you’re not reading your class notes.</h2>
 
-    <!-- LEFT PANEL -->
-    <section class="panel">
-      <h3 style="margin:0 0 0.3rem 0; font-size:0.9rem; color:var(--text-muted);">Paste your text</h3>
-      <textarea id="inputText" class="textarea" placeholder="Paste AI-generated or class notes here…" maxlength="2000"></textarea>
-
-      <div style="display:flex; justify-content:space-between; margin-top:0.25rem; font-size:0.78rem; color:var(--text-soft);">
-        <div id="inputError" style="color:var(--danger);"></div>
-        <div id="charCounter">0 / 2000 characters</div>
+    <div class="pain-cards">
+      <div class="pain-card">
+        <h3>📘 AI Notes = Emotionally Dead</h3>
+        GPT writes like a British scientist trapped in a cave.
       </div>
 
-      <!-- PRESETS -->
-      <div style="margin-top:1rem;">
-        <h4 style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.4rem;">Choose mode</h4>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-
-          <!-- FREE -->
-          <button class="preset-btn selected" data-preset="simple">
-            <span>Simple Humanizer (Free)</span>
-          </button>
-
-          <button class="preset-btn" data-preset="simple_words">
-            <span>Easy Words (Free)</span>
-          </button>
-
-          <!-- PRO -->
-          <button class="preset-btn" data-preset="exam">
-            <span>Exam Ready</span>
-            <span class="preset-pro-pill">PRO</span>
-          </button>
-
-          <button class="preset-btn" data-preset="genz">
-            <span>Gen-Z Mode</span>
-            <span class="preset-pro-pill">PRO</span>
-          </button>
-
-          <button class="preset-btn" data-preset="cause_effect">
-            <span>Cause → Effect</span>
-            <span class="preset-pro-pill">PRO</span>
-          </button>
-
-        </div>
+      <div class="pain-card">
+        <h3>🧠 Textbooks = NPC Dialogue</h3>
+        Who TF uses “therefore” in real life? Exactly.
       </div>
 
-      <!-- PRESET DESCRIPTION -->
-      <div id="presetPreview" style="
-        margin-top:0.8rem;
-        padding:0.7rem;
-        border-radius:0.8rem;
-        font-size:0.82rem;
-        background:white;
-        border:1px solid #cbd5e1;
-        color:#475569;
-        display:none;
-      "></div>
+      <div class="pain-card">
+        <h3>🥲 Teachers = PDF Machines</h3>
+        They dump info. You decode. Why??
+      </div>
+    </div>
 
-      <!-- COUNTER ABOVE BUTTON -->
-      <div id="humanizeCounterRow">
-        <span id="humanizeCounter">(0 left today)</span>
+    <p style="margin-top:1.5rem; font-weight:600; font-size:1rem;">
+      “School gave you notes. We give you understanding.”
+    </p>
+  </section>
+
+  <!-- MODES -->
+  <section class="modes">
+    <h2 style="font-size:1.8rem; font-weight:800;">Pick your vibe.</h2>
+
+    <div class="mode-list">
+      <div class="mode-item">✔ Simple Humanizer — Your notes, finally readable.</div>
+      <div class="mode-item">✔ Easy Words — Because “photosynthesis” shouldn’t require a brain transplant.</div>
+      <div class="mode-item">🔒 Exam Ready (PRO) — Write like a 98% kid on 2 hours of sleep.</div>
+      <div class="mode-item">🔒 Gen-Z Mode (PRO) — Notes explained like your gossiping friend.</div>
+      <div class="mode-item">🔒 Cause → Effect (PRO) — Converts chaos → logic.</div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing">
+    <h2 style="font-size:1.8rem; font-weight:800;">Pay less than 1 plate of momos. Get more marks.</h2>
+
+    <div class="price-cards">
+      <div class="price-card">
+        <h3>$4.99 / Monthly</h3>
+        For broke but ambitious kids.
       </div>
 
-      <!-- HUMANIZE BUTTON -->
-      <button id="humanizeBtn">
-        ✨ Humanize Notes
-      </button>
-    </section>
-
-    <!-- RIGHT PANEL -->
-    <section class="panel">
-      <h3 style="margin:0 0 0.3rem 0; font-size:0.9rem; color:var(--text-muted);">Result</h3>
-
-      <div id="outputBox" class="output-box">
-        <div style="color:#cbd5e1;">Your humanized notes will appear here…</div>
+      <div class="price-card">
+        <h3>$29.99 / Yearly</h3>
+        Half the price. Smart people choose this.
       </div>
 
-      <div id="outputError" style="color:var(--danger); font-size:0.78rem; margin-top:0.3rem;"></div>
-
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        margin-top:0.8rem;
-        flex-wrap:wrap;
-        gap:0.6rem;
-      ">
-        <button id="copyBtn" class="preset-btn" style="flex:1;">📋 Copy</button>
-        <button id="downloadBtn" class="preset-btn" style="flex:1;">⬇️ Download</button>
+      <div class="price-card">
+        <h3>$49 / Lifetime</h3>
+        One-time. Permanent flex.
       </div>
+    </div>
 
-      <div style="margin-top:0.9rem; font-size:0.78rem; color:var(--text-soft);">
-        Mode used:
-        <span id="modeUsed" style="
-          padding:0.15rem 0.5rem;
-          border-radius:999px;
-          background:#e2e8f0;
-          font-weight:600;
-        ">SIMPLE</span>
-      </div>
-    </section>
-  </main>
+    <div style="margin-top:1.5rem;">
+      <a href="/app.html"><button class="btn-main">Try Free →</button></a>
+    </div>
+
+    <p style="margin-top:0.6rem; color:#64748b;">
+      Invest in your brain, not another ₹150 Maggi plate.
+    </p>
+  </section>
 
   <!-- FOOTER -->
-  <footer style="
-    max-width:1120px;
-    margin:2.5rem auto;
-    padding:1.2rem 0;
-    text-align:center;
-    color:var(--text-muted);
-    font-size:0.85rem;
-  ">
-    <div style="
-  text-align:center; 
-  margin-top:2.5rem;
-  margin-bottom:2rem;
-">
-  <a href="/pricing.html" style="
-    display:inline-block;
-    padding:0.9rem 2rem;
-    background:linear-gradient(135deg, #0ea5e9, #22c55e);
-    color:white;
-    border-radius:999px;
-    font-size:1.1rem;
-    font-weight:700;
-    text-decoration:none;
-    box-shadow:0 10px 30px rgba(14,165,233,0.35);
-    transition:transform 0.15s ease, box-shadow 0.15s ease;
-  "
-  onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 14px 35px rgba(14,165,233,0.45)';"
-  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(14,165,233,0.35)';"
-  >
-    🚀 Upgrade to PRO
-  </a>
-
-  <p style="margin-top:0.6rem; color:#64748b; font-size:0.9rem;">
-    Unlock all modes, unlimited rewrites, and full power.
-  </p>
-</div>
-
+  <footer>
+    Clarytiq AI © 2025 — Made for the un-serious but secretly genius kids.
   </footer>
-
-  <!-- PRO EXAMPLE MODAL -->
-  <div id="proExampleModal" class="pro-modal-overlay">
-    <div class="pro-modal">
-      <h2 style="margin-bottom:0.4rem;">PRO Rewrite Example 🔒</h2>
-      <p style="font-size:0.85rem; color:#64748b;">Here’s how PRO transforms your notes:</p>
-
-      <div id="exampleInput" style="
-        margin-top:1rem;
-        padding:1rem;
-        background:#f1f5f9;
-        border-radius:0.7rem;
-        white-space:pre-wrap;
-        font-size:0.9rem;
-      "></div>
-
-      <div id="exampleOutput" style="
-        margin-top:1rem;
-        padding:1rem;
-        background:white;
-        border:1px solid #cbd5e1;
-        border-radius:0.7rem;
-        white-space:pre-wrap;
-        box-shadow:0 6px 14px rgba(15,23,42,0.08);
-        font-size:0.9rem;
-      "></div>
-
-      <button id="buyProBtn" style="
-        margin-top:1.3rem;
-        width:100%;
-        padding:0.7rem;
-        background:linear-gradient(135deg,#0ea5e9,#22c55e);
-        color:white;
-        border-radius:999px;
-        font-weight:700;
-        border:none;
-        cursor:pointer;
-      ">
-        Buy PRO now →
-      </button>
-
-      <button id="proExampleCloseBtn" style="
-        margin-top:0.6rem;
-        width:100%;
-        padding:0.6rem;
-        background:white;
-        border:1px solid #cbd5e1;
-        border-radius:999px;
-        cursor:pointer;
-      ">
-        Close
-      </button>
-
-      <p style="margin-top:0.6rem; font-size:0.78rem; color:#64748b; text-align:center;">
-        or <a href="/pricing.html" style="color:#0ea5e9; font-weight:600;">open pricing page</a> in a new tab.
-      </p>
-    </div>
-  </div>
-
-  <!-- TOAST -->
-  <div id="toast">
-    <span id="toastMessage">Copied!</span>
-  </div>
-
-  <!-- APP LOGIC -->
-  <script>
-  (function initNotesHumanizer() {
-
-    /* ===============================
-        CREDIT SYSTEM CONFIG
-    =============================== */
-
-    const LIMITS = {
-      beforeLogin: { simple: 1, simple_words: 1 },
-      afterLogin: { simple: 2, simple_words: 2, genz: 1, exam: 1, cause_effect: 1 }
-    };
-
-    const PRO_MODES = ["genz", "exam", "cause_effect"];
-
-    function loadCredits() {
-      const today = new Date().toDateString();
-      const saved = JSON.parse(localStorage.getItem("nh_credits"));
-
-      if (!saved || saved.date !== today) {
-        const fresh = {
-          date: today,
-          beforeLogin: { ...LIMITS.beforeLogin },
-          afterLogin: { ...LIMITS.afterLogin }
-        };
-        localStorage.setItem("nh_credits", JSON.stringify(fresh));
-        return fresh;
-      }
-      return saved;
-    }
-
-    function saveCredits(data) {
-      localStorage.setItem("nh_credits", JSON.stringify(data));
-    }
-
-    let credits = loadCredits();
-
-    function getCreditsLeft(preset) {
-      const pool = window.isUserLoggedIn ? credits.afterLogin : credits.beforeLogin;
-      const val = pool && typeof pool[preset] === "number" ? pool[preset] : 0;
-      return val;
-    }
-
-    function hasCredit(preset) {
-      return getCreditsLeft(preset) > 0;
-    }
-
-    function useCredit(preset) {
-      if (window.isUserLoggedIn) {
-        if (typeof credits.afterLogin[preset] === "number") {
-          credits.afterLogin[preset]--;
-        }
-      } else {
-        if (typeof credits.beforeLogin[preset] === "number") {
-          credits.beforeLogin[preset]--;
-        }
-      }
-      saveCredits(credits);
-    }
-
-    /* ===============================
-        UI ELEMENTS
-    =============================== */
-
-    const input = document.getElementById("inputText");
-    const outputBox = document.getElementById("outputBox");
-    const outputErr = document.getElementById("outputError");
-    const inputErr = document.getElementById("inputError");
-    const presetButtons = [...document.querySelectorAll(".preset-btn")];
-    const presetPreview = document.getElementById("presetPreview");
-    const modeUsedEl = document.getElementById("modeUsed");
-
-    const humanizeBtn = document.getElementById("humanizeBtn");
-    const humanizeCounter = document.getElementById("humanizeCounter");
-
-    const charCounter = document.getElementById("charCounter");
-
-    let selectedPreset = "simple";
-    let outputText = "";
-
-    /* ===============================
-        CREDIT COUNTER DISPLAY
-    =============================== */
-
-    function updateCreditCounter() {
-      const left = getCreditsLeft(selectedPreset);
-
-      if (PRO_MODES.includes(selectedPreset)) {
-        if (!window.isUserLoggedIn) {
-          humanizeCounter.textContent = "(Login required for this mode)";
-        } else {
-          humanizeCounter.textContent = `(${left} PRO tries left today)`;
-        }
-      } else {
-        humanizeCounter.textContent = `(${left} left today)`;
-      }
-    }
-
-    updateCreditCounter();
-
-    /* ===============================
-        PRESET LOGIC
-    =============================== */
-
-    const PRESET_DESC = {
-      simple: "Makes your text sound human and clean.",
-      simple_words: "Explains ideas in very simple words.",
-      exam: "Exam-style, formal school answers. (PRO Trial)",
-      genz: "Dark humour, emojis, Gen-Z tone. (PRO Trial)",
-      cause_effect: "Cause → Effect logic chain explanation. (PRO Trial)"
-    };
-
-    presetButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        selectedPreset = btn.dataset.preset;
-
-        presetButtons.forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-
-        modeUsedEl.textContent = selectedPreset.toUpperCase();
-
-        presetPreview.style.display = "block";
-        presetPreview.textContent = PRESET_DESC[selectedPreset] || "";
-
-        updateCreditCounter();
-      });
-    });
-
-    /* ===============================
-        API CALL WRAPPER
-    =============================== */
-
-    async function callAI(preset, text) {
-      try {
-        const res = await fetch("/api/humanize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ preset, userText: text })
-        });
-        const data = await res.json();
-        return data.output;
-      } catch (err) {
-        console.error("API error:", err);
-        return null;
-      }
-    }
-
-    /* ===============================
-        HUMANIZE BUTTON
-    =============================== */
-
-    const exampleModal = document.getElementById("proExampleModal");
-    exampleModal.addEventListener("click", (e) => {
-  e.stopPropagation(); // prevent overlay from closing instantly
-});
-
-    document.querySelector(".pro-modal").addEventListener("click", (e) => {
-  e.stopPropagation();  // prevents modal from closing instantly
-});
-
-    const exampleInput = document.getElementById("exampleInput");
-    const exampleOutput = document.getElementById("exampleOutput");
-
-    const signInOverlay = document.getElementById("sign-in");
-    document.getElementById("clerk-sign-in").addEventListener("click", (e) => {
-  e.stopPropagation();
-});
-
-
-    const PRO_EXAMPLES = {
-      genz: {
-        input: "The French Revolution changed France.",
-        output: "Bruhh France woke up and chose *violence* 💀🔥. King said 'stop', people said 'no'. Now boom—revolution."
-      },
-      exam: {
-        input: "The French Revolution changed France.",
-        output: "The French Revolution brought major political, economic, and social reforms to France."
-      },
-      cause_effect: {
-        input: "Taxes increased in France.",
-        output: "Cause → Effect:\n• Higher taxes → Public anger → Protests.\n• Food prices rose → Riots.\n• Govt debt increased → Collapse of monarchy."
-      }
-    };
-
-    humanizeBtn.addEventListener("click", async (e) => {
-  e.stopPropagation();   // <-- ADD THIS
-
-      inputErr.textContent = "";
-      outputErr.textContent = "";
-
-      const text = input.value.trim();
-      if (!text) {
-        inputErr.textContent = "Paste some text first.";
-        return;
-      }
-
-      // NO CREDIT STATE
-if (!hasCredit(selectedPreset)) {
-  console.log("NO CREDIT | loggedIn =", window.isUserLoggedIn, "| preset =", selectedPreset);
-
-  // CASE 1 → NOT LOGGED IN → ALWAYS SHOW LOGIN POPUP
-  if (!window.isUserLoggedIn) {
-    console.log("OPENING CLERK LOGIN POPUP");
-
-    if (window.showSignInOverlay) {
-      window.showSignInOverlay();
-    } else {
-      // Backup if function fails
-      const overlay = document.getElementById("sign-in");
-      if (overlay) overlay.style.display = "block";
-
-      const box = document.getElementById("clerk-sign-in");
-      if (window.Clerk && box && !box.hasChildNodes()) {
-        window.Clerk.mountSignIn(box, { appearance: { baseTheme: "light" } });
-      }
-    }
-
-    return; // STOP HERE
-  }
-
-  // CASE 2 → LOGGED IN → SHOW PRO EXAMPLE POPUP
-  console.log("OPENING PRO EXAMPLE POPUP");
-
-  const example = PRO_EXAMPLES[selectedPreset] || {
-    input: "You completed all free credits.",
-    output: "Unlock PRO to continue using this mode!"
-  };
-
-  exampleInput.textContent = example.input;
-  exampleOutput.textContent = example.output;
-  exampleModal.style.display = "flex";
-e.stopPropagation();  // <-- ADD THIS
-
-
-  return;
-}
-
-
-      // USE CREDIT
-      useCredit(selectedPreset);
-      updateCreditCounter();
-
-      // Loading skeleton
-      outputBox.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:0.4rem;">
-          <div style="height:0.75rem; background:#e2e8f0; border-radius:999px;"></div>
-          <div style="height:0.75rem; background:#e2e8f0; border-radius:999px; width:90%;"></div>
-          <div style="height:0.75rem; background:#e2e8f0; border-radius:999px; width:80%;"></div>
-        </div>
-      `;
-
-      const result = await callAI(selectedPreset, text);
-
-      if (!result) {
-        outputErr.textContent = "Something went wrong. Try again.";
-        return;
-      }
-
-      outputText = result;
-      outputBox.innerHTML = result.replace(/\n/g, "<br>");
-    });
-
-    /* ===============================
-        COPY & DOWNLOAD
-    =============================== */
-
-    const toast = document.getElementById("toast");
-    const toastMsg = document.getElementById("toastMessage");
-
-    function showToast(msg) {
-      toastMsg.textContent = msg;
-      toast.style.opacity = 1;
-      setTimeout(() => {
-        toast.style.opacity = 0;
-      }, 1500);
-    }
-
-    document.getElementById("copyBtn").addEventListener("click", () => {
-      navigator.clipboard.writeText(outputText || "");
-      showToast("Copied!");
-    });
-
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      const blob = new Blob([outputText || ""], { type: "text/plain" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "humanized.txt";
-      link.click();
-    });
-
-    /* ===============================
-        CLOSE MODALS
-    =============================== */
-
-    document.getElementById("proExampleCloseBtn").addEventListener("click", () => {
-      exampleModal.style.display = "none";
-    });
-
-// Close PRO modal when clicking OUTSIDE the modal box
-// Close PRO modal only when clicking OUTSIDE the modal box
-// Stop clicks INSIDE modal from closing it
-document.querySelector(".pro-modal").addEventListener("click", (e) => {
-  e.stopPropagation();
-});
-
-// Close modal only when clicking OUTSIDE the modal
-exampleModal.addEventListener("click", (e) => {
-  const box = document.querySelector(".pro-modal");
-  if (!box.contains(e.target)) {
-    exampleModal.style.display = "none";
-  }
-});
-
-
-
-// Close Clerk sign-in when clicking OUTSIDE the sign-in box
-signInOverlay.addEventListener("click", (e) => {
-  const box = document.getElementById("clerk-sign-in");
-  if (!box.contains(e.target)) {
-    signInOverlay.classList.remove("show");
-setTimeout(() => {
-  signInOverlay.style.display = "none";
-}, 300); // matches animation length
-
-  }
-});
-;
-
-
-    document.getElementById("buyProBtn").addEventListener("click", () => {
-      window.location.href = "/pricing.html";
-    });
-
-    /* ===============================
-        CHARACTER COUNTER
-    =============================== */
-
-    input.addEventListener("input", function () {
-      const count = this.value.length;
-      charCounter.textContent = `${count} / 2000 characters`;
-    });
-
-  })();
-  </script>
-
-  <!-- ESC key + optional scroll -->
-  <script>
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
-        const signInOverlay = document.getElementById("sign-in");
-        const proModal = document.getElementById("proExampleModal");
-
-        if (signInOverlay && signInOverlay.style.display === "block") {
-          signInOverlay.style.display = "none";
-        }
-        if (proModal && proModal.style.display === "flex") {
-          proModal.style.display = "none";
-        }
-      }
-    });
-
-    const scrollBtn = document.getElementById("landing-scroll-btn");
-    if (scrollBtn) {
-      scrollBtn.addEventListener("click", () => {
-        document.getElementById("tool-card")?.scrollIntoView({ behavior: "smooth" });
-      });
-    }
-  </script>
 
 </body>
 </html>
