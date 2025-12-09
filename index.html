@@ -1,407 +1,524 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="auto">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Clarytiq AI — Transform Complex Notes into Clear Text</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8" />
+<title>Clarytiq — Transform Notes into Clear Understanding</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Clerk (same key as before) -->
-  <script
-    async
-    crossorigin="anonymous"
-    data-clerk-publishable-key="pk_test_cHJvdmVuLW1ha28tNTAuY2xlcmsuYWNjb3VudHMuZGV2JA"
-    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
-  </script>
+<!-- FONTS -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+<style>
+/* --------------------------------------------------
+   ROOT VARIABLES & PREMIUM COLOURS
+-------------------------------------------------- */
+:root {
+    --cobalt: #0066ff;
+    --aqua: #00eaff;
+    --glow: rgba(0, 180, 255, 0.28); /* glow reduced by 75% */
+    --glass-dark: rgba(0, 25, 50, 0.35);
+    --border-light: rgba(0, 140, 255, 0.25);
+    --max-width: 1120px;
+}
 
-  <!-- MAIN LANDING STYLES -->
-  <link rel="stylesheet" href="/landing.css" />
+/* --------------------------------------------------
+   BASE
+-------------------------------------------------- */
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    overflow-x: hidden;
+    background: radial-gradient(circle at 20% 10%, #031b3f 0%, #020617 45%, #000000 100%);
+    color: white;
+    scroll-behavior: smooth;
+}
+
+/* --------------------------------------------------
+   PARALLAX BACKGROUND LAYER
+-------------------------------------------------- */
+.parallax-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -12;
+    pointer-events: none;
+    background: radial-gradient(circle at 25% 10%, #052a60 0%, #020617 50%, #000 100%);
+    transition: transform 0.1s ease-out;
+}
+
+/* --------------------------------------------------
+   FLOATING PARTICLES
+-------------------------------------------------- */
+.particle {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    background: var(--aqua);
+    border-radius: 50%;
+    opacity: 0.45;
+    filter: blur(3px);
+    animation: floatParticle 14s infinite linear;
+    z-index: -5;
+}
+
+@keyframes floatParticle {
+    0% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-80px) scale(1.4); }
+    100% { transform: translateY(0) scale(1); }
+}
+
+/* --------------------------------------------------
+   ORBIT ANIMATION BEHIND HERO
+-------------------------------------------------- */
+.orbit-container {
+    position: absolute;
+    left: 50%;
+    top: 54%;
+    transform: translate(-50%, -50%);
+    width: 460px;
+    height: 460px;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.25;
+}
+
+.orbit {
+    position: absolute;
+    inset: 0;
+    border: 2px dashed rgba(0, 200, 255, 0.35);
+    border-radius: 50%;
+    animation: orbitSpin 18s linear infinite;
+}
+
+@keyframes orbitSpin {
+    from { transform: rotate(0); }
+    to { transform: rotate(360deg); }
+}
+
+/* --------------------------------------------------
+   NAVBAR
+-------------------------------------------------- */
+.nav {
+    max-width: var(--max-width);
+    margin: 1.4rem auto;
+    padding: 1rem 1.6rem;
+    border-radius: 1rem;
+    background: rgba(0, 25, 50, 0.35);
+    border: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(18px);
+}
+
+.brand {
+    font-size: 1.7rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--aqua), #4d9fff);
+    -webkit-background-clip: text;
+    color: transparent;
+    letter-spacing: -0.5px;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+}
+
+.nav-right a {
+    text-decoration: none;
+    color: #c7d8ff;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.signin-btn {
+    padding: 0.55rem 1.2rem;
+    background: linear-gradient(135deg, #003a80, #0056c9);
+    border: none;
+    border-radius: 0.8rem;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* --------------------------------------------------
+   HERO SECTION
+-------------------------------------------------- */
+.hero {
+    max-width: var(--max-width);
+    margin: 5rem auto;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    position: relative;
+}
+
+.hero-left {
+    flex: 1;
+}
+
+.hero-left h1 {
+    font-size: clamp(2.4rem, 6vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.hero-left p {
+    margin-top: 1rem;
+    color: #b8c9d9;
+    font-size: 1.2rem;
+    max-width: 520px;
+}
+
+.cta-row {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 1.2rem 2.4rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 1rem;
+    border: none;
+    cursor: pointer;
+    color: white;
+    background: linear-gradient(145deg, #00214d, #003a80);
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+}
+
+/* Hero right image */
+.hero-right img {
+    width: 480px;
+    border-radius: 1rem;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 6px 12px var(--glow);
+}
+
+/* --------------------------------------------------
+   GLASS SECTIONS
+-------------------------------------------------- */
+.glass-section {
+    max-width: var(--max-width);
+    margin: 4rem auto;
+    padding: 2rem 2.4rem;
+    border-radius: 1.3rem;
+    background: var(--glass-dark);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 8px 14px rgba(0,0,0,0.35);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.1rem;
+    margin-bottom: 2rem;
+    font-weight: 800;
+}
+
+/* --------------------------------------------------
+   VALUE CARDS
+-------------------------------------------------- */
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+    gap: 1.6rem;
+}
+
+.card {
+    background: rgba(0,0,0,0.20);
+    padding: 1.6rem;
+    border-radius: 1.1rem;
+    border: 1px solid rgba(0,150,255,0.15);
+    transition: 0.4s ease;
+    font-size: 1.05rem;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    border-color: var(--aqua);
+}
+
+/* --------------------------------------------------
+   FAQ ACCORDION
+-------------------------------------------------- */
+.faq-item {
+    margin-bottom: 1rem;
+    background: rgba(0,0,0,0.25);
+    border-radius: 0.8rem;
+    border: 1px solid var(--border-light);
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .4s ease;
+    padding: 0 1rem;
+    font-size: 1rem;
+    color: #c7d8ff;
+}
+
+.faq-item.open .faq-answer {
+    max-height: 300px;
+    padding-bottom: 1rem;
+}
+
+.chevron {
+    transition: transform .3s;
+}
+
+.faq-item.open .chevron {
+    transform: rotate(90deg);
+}
+
+/* --------------------------------------------------
+   FOOTER
+-------------------------------------------------- */
+footer {
+    text-align: center;
+    padding: 2rem;
+    color: #7a8ca1;
+    font-size: 1rem;
+}
+</style>
 </head>
 
 <body>
-  <!-- Parallax background -->
-  <div class="parallax-bg"></div>
 
-  <!-- Clerk Sign-In Overlay -->
-  <div id="sign-in" class="sign-in-overlay">
-    <div id="clerk-sign-in" class="sign-in-box"></div>
-  </div>
+<!-- BACKGROUND -->
+<div class="parallax-bg"></div>
 
-  <!-- Hidden core Sign In trigger (#openSignIn) -->
-  <button id="openSignIn" type="button" class="visually-hidden" aria-hidden="true">
-    Core Sign In
-  </button>
+<!-- FLOATING PARTICLES -->
+<script>
+for (let i = 0; i < 14; i++) {
+    const p = document.createElement("div");
+    p.classList.add("particle");
+    p.style.left = Math.random()*100 + "vw";
+    p.style.top = Math.random()*100 + "vh";
+    p.style.animationDelay = Math.random()*8 + "s";
+    document.body.appendChild(p);
+}
+</script>
 
-  <!-- ========= NAVBAR ========= -->
-  <header class="nav">
-    <div class="nav-left">
-      <a href="/" class="brand-link">
-        <span class="brand-text">Clarytiq</span>
-      </a>
+<!-- NAVBAR -->
+<header class="nav">
+    <div class="brand">Clarytiq</div>
+
+    <div class="nav-right">
+        <a href="/pricing.html">Pricing</a>
+        <a href="/legal.html">Legal</a>
+        <a href="/support.html">Support</a>
+        <button class="signin-btn" id="openSignIn">Sign In</button>
     </div>
+</header>
 
-    <nav class="nav-right" aria-label="Main navigation">
-      <a href="/pricing.html" class="nav-link">Pricing</a>
-      <a href="/legal.html" class="nav-link">Legal</a>
-      <a href="/support.html" class="nav-link">Support</a>
+<!-- SIGN-IN OVERLAY -->
+<div id="sign-in" style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(12px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity .35s ease;
+">
+    <div id="clerk-sign-in" style="width:400px; max-width:90%;"></div>
+</div>
 
-      <button type="button" class="nav-signin js-signin-trigger">
-        Sign In
-      </button>
+<!-- HERO -->
+<section class="hero">
+    <div class="orbit-container"><div class="orbit"></div></div>
 
-      <button
-        type="button"
-        class="nav-toggle"
-        id="themeToggle"
-        aria-label="Toggle dark mode"
-      >
-        <!-- Simple sun/moon icon -->
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5.6 5.6L4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4L4.2 19.8M19.8 4.2l-1.4 1.4" />
-        </svg>
-      </button>
-    </nav>
-  </header>
-
-  <!-- ========= HERO (The Billion-Dollar Calm) ========= -->
-  <section class="hero reveal" id="hero">
-    <div class="orbit-container">
-      <div class="orbit"></div>
-    </div>
-
-    <div class="hero-inner">
-      <div class="hero-text">
+    <div class="hero-left">
         <h1>Transform complex notes into clear, human text. Instantly.</h1>
-        <p class="hero-sub">
-          Clarytiq rewrites AI-generated and class notes into concise, natural, exam-ready explanations—designed for clarity, speed, and results.
+        <p>
+            Clarytiq rewrites AI-generated and class notes into concise,
+            natural, exam-ready explanations—designed for clarity, speed, and results.
         </p>
-
-        <div class="hero-ctas">
-          <button
-            type="button"
-            class="btn primary js-try-free"
-            data-scroll-target="#tool-card"
-          >
-            Try Free
-          </button>
-
-          <button
-            type="button"
-            class="btn ghost js-signin-trigger"
-          >
-            Sign In
-          </button>
+        <div class="cta-row">
+            <a href="/app.html"><button class="btn">✨ Try Free</button></a>
+            <button class="btn" id="openSignIn2">Sign In</button>
         </div>
-
-        <p class="hero-micro">
-          No fluff. No noise. Just clean understanding.
-        </p>
-      </div>
-
-      <div class="hero-media">
-        <div class="hero-mockup">
-          <img src="/screenshot.png" alt="Screenshot of Clarytiq AI transforming notes" />
-        </div>
-      </div>
+        <p style="margin-top:1rem; color:#b0c0d0;">No fluff. No noise. Just clean understanding.</p>
     </div>
-  </section>
 
-  <!-- ========= SECTION 2 — VALUE PROP ========= -->
-  <section class="glass-section reveal" aria-labelledby="value-heading">
-    <h2 id="value-heading" class="section-title">Built to make hard notes feel simple.</h2>
+    <div class="hero-right">
+        <img src="/screenshot.png" alt="App screenshot" />
+    </div>
+</section>
+
+<!-- VALUE PROP -->
+<section class="glass-section">
+    <h2 class="section-title">Why students choose Clarytiq</h2>
 
     <div class="grid-3">
-      <article class="card">
-        <h3>🌐 Precision Rewriting</h3>
-        <p>Turn raw, robotic text into smooth, polished human notes.</p>
-      </article>
-
-      <article class="card">
-        <h3>⚡ Ultra-Fast Understanding</h3>
-        <p>Summaries rewritten into clean, exam-style clarity.</p>
-      </article>
-
-      <article class="card">
-        <h3>🎯 Designed for Focus</h3>
-        <p>A tool that removes confusion—not adds to it.</p>
-      </article>
+        <div class="card">🌐 <strong>Precision Rewriting</strong><br>Turn raw robotic text into smooth human notes.</div>
+        <div class="card">⚡ <strong>Ultra-Fast Understanding</strong><br>Summaries rewritten into high-clarity explanations.</div>
+        <div class="card">🎯 <strong>Designed for Focus</strong><br>Reduces confusion. Improves clarity instantly.</div>
     </div>
-  </section>
+</section>
 
-  <!-- ========= SECTION 3 — MODES ========= -->
-  <section class="glass-section reveal" aria-labelledby="modes-heading">
-    <h2 id="modes-heading" class="section-title">Modes for every type of note.</h2>
+<!-- MODES -->
+<section class="glass-section">
+    <h2 class="section-title">Modes built for every need</h2>
 
-    <div class="grid-3 modes-grid">
-      <article class="card mode-card">
-        <h3>Simple Humanizer</h3>
-        <p>Makes text natural, structured, and easy to read.</p>
-      </article>
-
-      <article class="card mode-card">
-        <h3>Easy Words</h3>
-        <p>Rewrites concepts into simpler, digestible language.</p>
-      </article>
-
-      <article class="card mode-card">
-        <div class="mode-heading-pro">
-          <h3>Exam Ready</h3>
-          <span class="badge-pro">PRO</span>
-        </div>
-        <p>Clear, formal, high-scoring answers following academic standards.</p>
-      </article>
-
-      <article class="card mode-card">
-        <div class="mode-heading-pro">
-          <h3>Gen-Z Mode</h3>
-          <span class="badge-pro">PRO</span>
-        </div>
-        <p>Friendly, casual, conversational rewriting.</p>
-      </article>
-
-      <article class="card mode-card">
-        <div class="mode-heading-pro">
-          <h3>Cause → Effect</h3>
-          <span class="badge-pro">PRO</span>
-        </div>
-        <p>Logical, structured breakdowns of any concept.</p>
-      </article>
+    <div class="grid-3">
+        <div class="card">✔ Simple Humanizer</div>
+        <div class="card">✔ Easy Words</div>
+        <div class="card">🔒 Exam Ready (PRO)</div>
+        <div class="card">🔒 Gen-Z Mode (PRO)</div>
+        <div class="card">🔒 Cause → Effect (PRO)</div>
     </div>
-  </section>
+</section>
 
-  <!-- ========= SECTION 4 — HOW IT WORKS ========= -->
-  <section class="glass-section reveal" aria-labelledby="how-heading">
-    <h2 id="how-heading" class="section-title">How it works.</h2>
+<!-- HOW IT WORKS -->
+<section class="glass-section">
+    <h2 class="section-title">How it works</h2>
 
-    <ol class="steps">
-      <li>
-        <h3>1. Paste your text.</h3>
-        <p>Drop in AI outputs, class notes, or messy drafts.</p>
-      </li>
-      <li>
-        <h3>2. Choose a mode.</h3>
-        <p>Select the style that matches your brain—and the exam.</p>
-      </li>
-      <li>
-        <h3>3. Receive clean notes.</h3>
-        <p>Get beautifully structured, human-ready explanations.</p>
-      </li>
-    </ol>
-
-    <p class="micro-copy">Built for students, optimized for clarity.</p>
-  </section>
-
-  <!-- ========= SECTION 5 — SOCIAL PROOF ========= -->
-  <section class="glass-section reveal" aria-labelledby="social-heading">
-    <h2 id="social-heading" class="section-title">What students are saying.</h2>
-
-    <div class="grid-3 testimonials">
-      <article class="testimonial">
-        <div class="avatar"></div>
-        <div class="testimonial-body">
-          <p class="quote">“Finally, notes that actually make sense.”</p>
-          <p class="meta">Student — Delhi</p>
-        </div>
-      </article>
-
-      <article class="testimonial">
-        <div class="avatar"></div>
-        <div class="testimonial-body">
-          <p class="quote">“Cleaner than anything I’ve ever written.”</p>
-          <p class="meta">Student — Bengaluru</p>
-        </div>
-      </article>
-
-      <article class="testimonial">
-        <div class="avatar"></div>
-        <div class="testimonial-body">
-          <p class="quote">“Exam Ready mode is ridiculously good.”</p>
-          <p class="meta">Student — Mumbai</p>
-        </div>
-      </article>
+    <div class="grid-3">
+        <div class="card">1️⃣ Paste your text.</div>
+        <div class="card">2️⃣ Choose a mode.</div>
+        <div class="card">3️⃣ Get clean, beautifully structured notes.</div>
     </div>
-  </section>
 
-  <!-- ========= SECTION 6 — PRICING PREVIEW ========= -->
-  <section class="glass-section reveal" aria-labelledby="pricing-heading">
-    <h2 id="pricing-heading" class="section-title">Simple, transparent pricing.</h2>
-
-    <div class="grid-3 pricing-grid">
-      <article class="price-card">
-        <h3>Monthly</h3>
-        <p class="price">$4.99 / mo</p>
-        <ul class="price-features">
-          <li>Unlimited rewrites</li>
-          <li>All PRO modes</li>
-          <li>Faster AI engine</li>
-        </ul>
-        <a href="/pricing.html" class="btn secondary">Get Monthly</a>
-      </article>
-
-      <article class="price-card">
-        <h3>Yearly</h3>
-        <p class="price">$29.99 / yr</p>
-        <ul class="price-features">
-          <li>Unlimited rewrites</li>
-          <li>All PRO modes</li>
-          <li>Faster AI engine</li>
-        </ul>
-        <a href="/pricing.html" class="btn secondary">Get Yearly</a>
-      </article>
-
-      <article class="price-card">
-        <h3>Lifetime</h3>
-        <p class="price">$49 one-time</p>
-        <ul class="price-features">
-          <li>Unlimited rewrites</li>
-          <li>All PRO modes</li>
-          <li>Faster AI engine</li>
-        </ul>
-        <a href="/pricing.html" class="btn secondary">Get Lifetime</a>
-      </article>
-    </div>
-  </section>
-
-  <!-- ========= SECTION 7 — FAQ ========= -->
-  <section class="glass-section reveal faq-section" aria-labelledby="faq-heading">
-    <h2 id="faq-heading" class="section-title">FAQ</h2>
-
-    <div class="faq-list" role="list">
-      <!-- ITEM 1 -->
-      <div class="faq-item" role="listitem">
-        <button
-          type="button"
-          class="faq-question"
-          aria-expanded="false"
-        >
-          <span>How many free rewrites do I get per day?</span>
-          <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
-        <div class="faq-answer" hidden>
-          <p>
-            Clarytiq gives you a limited number of free rewrites each day so you can test the tool without stress.
-            When you upgrade to PRO, you unlock unlimited rewrites with all modes available.
-          </p>
-        </div>
-      </div>
-
-      <!-- ITEM 2 -->
-      <div class="faq-item" role="listitem">
-        <button
-          type="button"
-          class="faq-question"
-          aria-expanded="false"
-        >
-          <span>What’s included in PRO?</span>
-          <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
-        <div class="faq-answer" hidden>
-          <p>
-            PRO includes Exam Ready, Gen-Z Mode, and Cause → Effect modes, plus unlimited rewrites and faster output across the app.
-          </p>
-        </div>
-      </div>
-
-      <!-- ITEM 3 -->
-      <div class="faq-item" role="listitem">
-        <button
-          type="button"
-          class="faq-question"
-          aria-expanded="false"
-        >
-          <span>Do you store my notes?</span>
-          <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
-        <div class="faq-answer" hidden>
-          <p>
-            Clarytiq is built with a privacy-respecting mindset. We don’t persist personal notes by default.
-            For full details, see the <a href="/legal.html">Legal</a> page.
-          </p>
-        </div>
-      </div>
-
-      <!-- ITEM 4 -->
-      <div class="faq-item" role="listitem">
-        <button
-          type="button"
-          class="faq-question"
-          aria-expanded="false"
-        >
-          <span>How do I upgrade?</span>
-          <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
-        <div class="faq-answer" hidden>
-          <p>
-            Upgrading is simple: go to the <a href="/pricing.html">Pricing</a> page, choose your plan, and complete checkout.
-            Your PRO features unlock instantly.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ========= SECTION 8 — FINAL CTA ========= -->
-  <section class="glass-section reveal final-cta">
-    <h2 class="section-title">
-      Upgrade your learning experience. Better clarity, better notes, better results.
-    </h2>
-
-    <div class="final-cta-buttons">
-      <button
-        type="button"
-        class="btn primary js-try-free"
-        data-scroll-target="#tool-card"
-      >
-        Try Free
-      </button>
-
-      <a href="/pricing.html" class="btn ghost">
-        See Pricing
-      </a>
-    </div>
-  </section>
-
-  <!-- ========= TOOL / APP SECTION ========= -->
-  <!--
-    Replace this placeholder with your existing tool:
-    <main class="main-card" id="tool-card"> ... </main>
-  -->
-  <section id="tool-card" class="tool-placeholder">
-    <p style="text-align:center; color:#94a3b8; margin:2rem 0;">
-      <!-- TEMP: Replace this entire section with your existing app/main-card. -->
-      Tool goes here.
+    <p style="text-align:center; margin-top:1rem; color:#a9bdd2;">
+        Built for students. Optimized for clarity.
     </p>
-  </section>
+</section>
 
-  <!-- ========= FOOTER ========= -->
-  <footer class="page-footer reveal">
-    <div class="footer-links">
-      <a href="/pricing.html">Pricing</a>
-      <a href="/legal.html">Legal</a>
-      <a href="/support.html">Support</a>
+<!-- SOCIAL PROOF -->
+<section class="glass-section">
+    <h2 class="section-title">What students say</h2>
+
+    <div class="grid-3">
+        <div class="card">“Finally, notes that actually make sense.”<br><br><small>Student — Delhi</small></div>
+        <div class="card">“Cleaner than anything I’ve ever written.”<br><br><small>Student — Mumbai</small></div>
+        <div class="card">“Exam Ready mode is ridiculously good.”<br><br><small>Student — Bangalore</small></div>
     </div>
-    <p class="footer-meta">
-      © 2025 Clarytiq. Powered by Vercel • Clerk.
-    </p>
-  </footer>
+</section>
 
-  <!-- MAIN LANDING JS -->
-  <script src="/landing.js"></script>
+<!-- PRICING PREVIEW -->
+<section class="glass-section">
+    <h2 class="section-title">Simple, transparent pricing</h2>
+
+    <div class="grid-3">
+        <div class="card"><h3>$4.99 / Monthly</h3><p>Unlimited rewrites • All PRO modes</p><a href="/pricing.html"><button class="btn">Get Monthly</button></a></div>
+        <div class="card"><h3>$29.99 / Yearly</h3><p>Save more • All PRO features</p><a href="/pricing.html"><button class="btn">Get Yearly</button></a></div>
+        <div class="card"><h3>$49 Lifetime</h3><p>One-time payment • Full access forever</p><a href="/pricing.html"><button class="btn">Get Lifetime</button></a></div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="glass-section">
+    <h2 class="section-title">FAQ</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">How many free rewrites do I get per day?<span class="chevron">›</span></div>
+        <div class="faq-answer">You get daily free credits. PRO unlocks unlimited rewrites.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">What’s included in PRO?<span class="chevron">›</span></div>
+        <div class="faq-answer">PRO includes Exam Ready, Gen-Z Mode, Cause → Effect, unlimited rewrites, and faster output.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Do you store my notes?<span class="chevron">›</span></div>
+        <div class="faq-answer">Clarytiq does not store your personal notes by default. See the legal page for details.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">How do I upgrade?<span class="chevron">›</span></div>
+        <div class="faq-answer">Visit <a href="/pricing.html">pricing</a> to upgrade instantly.</div>
+    </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="glass-section">
+    <h2 class="section-title">Upgrade your learning experience</h2>
+
+    <div style="text-align:center;">
+        <a href="/app.html"><button class="btn">Try Free</button></a>
+        <a href="/pricing.html"><button class="btn" style="margin-left:1rem;">See Pricing</button></a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    © 2025 Clarytiq — Powered by Vercel • Clerk
+</footer>
+
+<!-- SCRIPTS -->
+<script>
+/* --------------------------------------------------
+   PARALLAX BACKGROUND
+-------------------------------------------------- */
+const parallax = document.querySelector(".parallax-bg");
+document.addEventListener("mousemove", (e) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 16;
+    const y = (e.clientY / window.innerHeight - 0.5) * 16;
+    parallax.style.transform = `translate(${x}px, ${y}px)`;
+});
+
+/* --------------------------------------------------
+   FAQ ACCORDION
+-------------------------------------------------- */
+document.querySelectorAll(".faq-item").forEach(item => {
+    item.addEventListener("click", () => {
+        item.classList.toggle("open");
+    });
+});
+
+/* --------------------------------------------------
+   SIGN-IN MODAL
+-------------------------------------------------- */
+const overlay = document.getElementById("sign-in");
+const signInBtns = [document.getElementById("openSignIn"), document.getElementById("openSignIn2")];
+
+signInBtns.forEach(btn =>
+    btn.addEventListener("click", () => {
+        overlay.style.display = "flex";
+        setTimeout(() => overlay.style.opacity = "1", 20);
+
+        if (window.Clerk && !document.getElementById("clerk-sign-in").hasChildNodes()) {
+            window.Clerk.mountSignIn(document.getElementById("clerk-sign-in"), { appearance: { baseTheme: "light" } });
+        }
+    })
+);
+
+overlay.addEventListener("click", (e) => {
+    const box = document.getElementById("clerk-sign-in");
+    if (!box.contains(e.target)) {
+        overlay.style.opacity = "0";
+        setTimeout(() => overlay.style.display = "none", 300);
+    }
+});
+</script>
+
+<!-- CLERK -->
+<script async crossorigin="anonymous"
+    data-clerk-publishable-key="pk_test_cHJvdmVuLW1ha28tNTAuY2xlcmsuYWNjb3VudHMuZGV2JA"
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+</script>
+
 </body>
 </html>
