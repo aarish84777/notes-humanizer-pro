@@ -54,9 +54,26 @@
       window.showSignInOverlay = function (e) {
   e?.stopPropagation();   // <-- ADD THIS
 
-        if (!signInOverlay) return;
-        signInOverlay.classList.add("show");
-signInOverlay.style.display = "block";
+window.showSignInOverlay = function (e) {
+  e?.stopPropagation();
+
+  if (!signInOverlay) return;
+
+  // 1. Show instantly
+  signInOverlay.style.display = "block";
+
+  // 2. THEN animate (important)
+  setTimeout(() => {
+    signInOverlay.classList.add("show");
+  }, 10);
+
+  if (window.Clerk && signInBox && !signInBox.hasChildNodes()) {
+    window.Clerk.mountSignIn(signInBox, {
+      appearance: { baseTheme: "light" }
+    });
+  }
+};
+
 
 
         if (window.Clerk && signInBox && !signInBox.hasChildNodes()) {
