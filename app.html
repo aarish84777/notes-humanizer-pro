@@ -691,6 +691,37 @@ async function saveCredits(data) {
     const charCounter = document.getElementById("charCounter");
 
     let selectedPreset = "simple";
+    /* ===============================
+    CREDIT FUNCTIONS (REQUIRED)
+=============================== */
+
+function getCreditsLeft(preset) {
+  if (!credits) return 0;
+  const pool = window.isUserLoggedIn ? credits.afterLogin : credits.beforeLogin;
+  if (!pool) return 0;
+  return typeof pool[preset] === "number" ? pool[preset] : 0;
+}
+
+function hasCredit(preset) {
+  return getCreditsLeft(preset) > 0;
+}
+
+function useCredit(preset) {
+  if (!credits) return;
+
+  if (window.isUserLoggedIn) {
+    if (typeof credits.afterLogin[preset] === "number") {
+      credits.afterLogin[preset]--;
+    }
+  } else {
+    if (typeof credits.beforeLogin[preset] === "number") {
+      credits.beforeLogin[preset]--;
+    }
+  }
+
+  saveCredits(credits);
+}
+
     let outputText = "";
 
     /* ===============================
