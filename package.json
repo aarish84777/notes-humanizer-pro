@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "groq-sdk": "^0.37.0"
+    "groq-sdk": "^0.37.0",
+    "raw-body": "^3.0.2"
   }
 }
