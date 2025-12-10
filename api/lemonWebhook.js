@@ -1,49 +1,49 @@
-import crypto from "crypto";
 import fs from "fs";
 import path from "path";
+import getRawBody from "raw-body";
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export default async function handler(req, res) {
-  const SECRET = process.env.LEMON_SQUEEZY_SECRET;
+  try {
+    const rawBody = await getRawBody(req);
+    const event = JSON.parse(rawBody.toString("utf8"));
 
-  const raw = JSON.stringify(req.body);
-  const signature = req.headers["x-signature"];
+    console.log("🍋 Webhook received:", event.meta.event_name);
 
-  const hash = crypto
-    .createHmac("sha256", SECRET)
-    .update(raw)
-    .digest("hex");
+    const email = event?.data?.attributes?.user_email;
+    if (!email) return res.status(200).json({ message: "no email" });
 
-  if (signature !== hash) {
-    return res.status(401).json({ message: "Invalid signature" });
+    const eventName = event.meta.event_name;
+
+    const file = path.join(process.cwd(), "proUsers.json");
+
+    let db = {};
+    if (fs.existsSync(file)) {
+      db = JSON.parse(fs.readFileSync(file, "utf8"));
+    }
+
+    if (
+      eventName === "order_created" ||
+      eventName === "subscription_created" ||
+      eventName === "invoice_payment_succeeded"
+    ) {
+      db[email] = true;
+    }
+
+    if (eventName === "subscription_cancelled") {
+      db[email] = false;
+    }
+
+    fs.writeFileSync(file, JSON.stringify(db, null, 2));
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Webhook error:", error);
+    return res.status(200).json({ error: false });
   }
-
-  const event = req.body;
-  const email = event?.data?.attributes?.user_email;
-
-  if (!email) {
-    return res.status(200).json({ message: "No email found" });
-  }
-
-  const eventName = event.meta.event_name;
-
-  const file = path.join(process.cwd(), "proUsers.json");
-  if (!fs.existsSync(file)) fs.writeFileSync(file, JSON.stringify({}));
-
-  const db = JSON.parse(fs.readFileSync(file, "utf8"));
-
-  if (
-    eventName === "order_created" ||
-    eventName === "invoice_payment_succeeded" ||
-    eventName === "subscription_created"
-  ) {
-    db[email] = true;
-  }
-
-  if (eventName === "subscription_cancelled") {
-    db[email] = false;
-  }
-
-  fs.writeFileSync(file, JSON.stringify(db, null, 2));
-
-  return res.status(200).json({ success: true });
 }
