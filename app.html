@@ -119,6 +119,7 @@ if (user && user.primaryEmailAddress) {
 
           window.isUserLoggedIn = !!(user && user.id);
           window.updateAuthUI();
+          
         };
 
         emit();
@@ -619,6 +620,11 @@ window.Clerk.mountUserButton(userButtonContainer, {
     <span id="toastMessage">Copied!</span>
   </div>
 
+<script type="module">
+  import { supabase } from "/lib/supabase.js";
+</script>
+
+  
   <!-- APP LOGIC -->
   <script>
   (function initNotesHumanizer() {
@@ -634,13 +640,17 @@ window.Clerk.mountUserButton(userButtonContainer, {
 
     const PRO_MODES = ["genz", "exam", "cause_effect"];
 
+/* ========================================================
+   SUPABASE + REALTIME CREDIT SYSTEM (FULL VERSION)
+======================================================== */
+
 async function loadCredits() {
   const user = window.Clerk?.user;
   const today = new Date().toDateString();
 
-  // If not logged in → fall back to localStorage LIMITS
   if (!user) {
     const saved = JSON.parse(localStorage.getItem("nh_credits"));
+
     if (!saved || saved.date !== today) {
       const fresh = {
         date: today,
@@ -649,49 +659,81 @@ async function loadCredits() {
       localStorage.setItem("nh_credits", JSON.stringify(fresh));
       return fresh;
     }
+
     return saved;
   }
 
-  // LOGGED IN → fetch credits from backend
-  const res = await fetch(`/api/getCredits?userId=${user.id}`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`/api/getCredits?userId=${user.id}`);
+    let data = await res.json();
 
-  if (!data || data.date !== today) {
-    // New day → reset on server
-    const fresh = {
+    if (!data || data.date !== today) {
+      const fresh = {
+        date: today,
+        afterLogin: { ...LIMITS.afterLogin }
+      };
+
+      await fetch(`/api/saveCredits`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, credits: fresh })
+      });
+
+      return fresh;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Error loading Supabase credits:", err);
+    return {
       date: today,
       afterLogin: { ...LIMITS.afterLogin }
     };
-
-    await fetch(`/api/saveCredits`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user.id, credits: fresh })
-    });
-
-    return fresh;
   }
-
-  return data;
 }
-
 
 async function saveCredits(data) {
   const user = window.Clerk?.user;
 
   if (!user) {
-    // Not logged in → save only locally
     localStorage.setItem("nh_credits", JSON.stringify(data));
     return;
   }
 
-  // Logged in → save on server
-  await fetch(`/api/saveCredits`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId: user.id, credits: data })
-  });
+  try {
+    await fetch(`/api/saveCredits`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.id, credits: data })
+    });
+  } catch (err) {
+    console.error("Supabase save error:", err);
+  }
 }
+
+if (window.Clerk?.user) {
+  const userId = window.Clerk.user.id;
+
+  supabase
+    .channel("credits-live-" + userId)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "credits",
+        filter: `user_id=eq.${userId}`
+      },
+      (payload) => {
+        const updated = payload.new.credits;
+        credits = updated;
+        console.log("🔥 REALTIME: credits updated:", credits);
+        updateCreditCounter();
+      }
+    )
+    .subscribe();
+}
+
 
 
     /* ===============================

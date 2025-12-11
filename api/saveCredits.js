@@ -1,20 +1,12 @@
-import fs from "fs";
-import path from "path";
+import { supabase } from "../lib/supabase";
 
-const dbPath = path.join(process.cwd(), "credits.json");
-
-export default function handler(req, res) {
+export default async function handler(req, res) {
   const { userId, credits } = req.body;
 
-  if (!fs.existsSync(dbPath)) {
-    fs.writeFileSync(dbPath, "{}");
-  }
+  await supabase.from("credits").upsert({
+    user_id: userId,
+    credits,
+  });
 
-  const db = JSON.parse(fs.readFileSync(dbPath));
-
-  db[userId] = credits;
-
-  fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
-
-  res.json({ ok: true });
+  res.json({ success: true });
 }

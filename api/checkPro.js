@@ -1,22 +1,13 @@
-import fs from "fs";
-import path from "path";
+import { supabase } from "../lib/supabase";
 
-export default function handler(req, res) {
-  const userId = req.query.userId; // <-- FIXED
-  if (!userId) {
-    return res.status(400).json({ error: "Missing userId" });
-  }
+export default async function handler(req, res) {
+  const { userId } = req.query;
 
-  const file = path.join(process.cwd(), "proUsers.json");
+  const { data } = await supabase
+    .from("pro_users")
+    .select("is_pro")
+    .eq("user_id", userId)
+    .single();
 
-  if (!fs.existsSync(file)) {
-    fs.writeFileSync(file, JSON.stringify({}));
-  }
-
-  const db = JSON.parse(fs.readFileSync(file, "utf8"));
-
-  // Correct PRO check (matches your JSON!)
-  const isPro = db[userId]?.isPro === true;
-
-  return res.status(200).json({ active: isPro });
+  res.json(data?.is_pro || false);
 }
