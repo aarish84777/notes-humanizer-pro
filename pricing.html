@@ -158,7 +158,12 @@
         <li>✔ Priority Access</li>
       </ul>
 
-      <button class="cta-btn" onclick="upgrade('monthly')">Get Monthly</button>
+ <button 
+  class="cta-btn" 
+  data-ls-checkout="variant:c46948af-46cf-45e1-a232-758057835937">
+  Get Monthly
+</button>
+
     </div>
 
     <!-- YEARLY -->
@@ -194,21 +199,7 @@
   </section>
 
   <script>
-    // Upgrade handler
-    async function upgrade(plan) {
-      if (!window.isUserLoggedIn) {
-        // force sign-in overlay
-        if (window.showSignInOverlay) {
-          return window.showSignInOverlay();
-        }
-        return;
-      }
 
-      // After login → redirect to Stripe/checkout
-window.location.href = "https://clarytiq.lemonsqueezy.com/buy/c46948af-46cf-45e1-a232-758057835937?embed=1";
-
-      // Replace alert with real checkout URL later
-    }
 
     // Clerk wiring (same as your main page)
     document.addEventListener("DOMContentLoaded", () => {
@@ -222,6 +213,7 @@ window.location.href = "https://clarytiq.lemonsqueezy.com/buy/c46948af-46cf-45e1
     });
   </script>
 <script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
+<script>LemonSqueezy.init();</script>
 
 
 </body>
