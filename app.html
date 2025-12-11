@@ -13,141 +13,13 @@
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
   </script>
 
-  <!-- Global Auth State + Clerk wiring -->
+  <!-- Privacy-friendly analytics by Plausible -->
+  <script async src="https://plausible.io/js/pa-giwVKduso5k4WRbNlcti2.js"></script>
   <script>
-    window.isUserLoggedIn = false;
-
-    // Update navbar + PRO pills
-    window.updateAuthUI = function () {
-      const signInBtn = document.getElementById("openSignIn");
-      const userBtnContainer = document.getElementById("clerk-user-button");
-
-      if (!signInBtn || !userBtnContainer) return;
-
-      if (window.isUserLoggedIn) {
-        signInBtn.style.display = "none";
-        userBtnContainer.style.display = "block";
-      } else {
-        signInBtn.style.display = "inline-flex";
-        userBtnContainer.style.display = "none";
-      }
-
-      // Lock/unlock PRO labels visually
-      const proButtons = document.querySelectorAll(
-        '.preset-btn[data-preset="exam"], .preset-btn[data-preset="genz"], .preset-btn[data-preset="cause_effect"]'
-      );
-
-      proButtons.forEach(btn => {
-        const pill = btn.querySelector(".preset-pro-pill");
-        if (!pill) return;
-        pill.style.display = window.isUserLoggedIn ? "none" : "inline-flex";
-      });
-    };
-
-    window.addEventListener("load", async () => {
-      const signInOverlay = document.getElementById("sign-in");
-      const signInBox = document.getElementById("clerk-sign-in");
-      const openSignInBtn = document.getElementById("openSignIn");
-      const userBtnContainer = document.getElementById("clerk-user-button");
-
-      // Global helper to open Clerk sign-in
-      window.showSignInOverlay = function (e) {
-  e?.stopPropagation();   // <-- ADD THIS
-
-window.showSignInOverlay = function (e) {
-  e?.stopPropagation();
-
-  if (!signInOverlay) return;
-
-  // 1. Show instantly
-  signInOverlay.style.display = "block";
-
-  // 2. THEN animate (important)
-  setTimeout(() => {
-    signInOverlay.classList.add("show");
-  }, 10);
-
-  if (window.Clerk && signInBox && !signInBox.hasChildNodes()) {
-window.Clerk.mountSignIn(signInBox, {
-  afterSignInUrl: window.location.href,
-  afterSignUpUrl: window.location.href,
-  appearance: { baseTheme: "light" }
-});
-
-  }
-};
-
-
-
-        if (window.Clerk && signInBox && !signInBox.hasChildNodes()) {
-          window.Clerk.mountSignIn(signInBox, {
-            appearance: { baseTheme: "light" }
-          });
-        }
-      };
-
-      if (openSignInBtn) {
-        openSignInBtn.addEventListener("click", (e) => {
-  e.stopPropagation();  // <-- ADD THIS
-  window.showSignInOverlay();
-});
-
-      }
-
-      if (!window.Clerk) {
-        console.warn("Clerk not loaded yet");
-        return;
-      }
-
-      try {
-        await window.Clerk.load();
-
-        const emit = () => {
-          // user is null when signed out, object with id when signed in
-          const user = window.Clerk.user;
-          // Save email → userId map to backend
-if (user && user.primaryEmailAddress) {
-  fetch("/api/saveEmailMap", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: user.primaryEmailAddress.emailAddress,
-      userId: user.id
-    })
-  }).catch(err => console.error("Email map error:", err));
-}
-
-          window.isUserLoggedIn = !!(user && user.id);
-          window.updateAuthUI();
-          
-        };
-
-        emit();
-        window.Clerk.addListener(emit);
-
-        if (userBtnContainer) {
-window.Clerk.mountUserButton(userButtonContainer, {
-  afterSignInUrl: window.location.href,
-  afterSignUpUrl: window.location.href,
-  afterSignOutUrl: window.location.href,
-  appearance: { baseTheme: "light" }
-});
-
-        }
-      } catch (err) {
-        console.error("Clerk load error:", err);
-      }
-    });
+    window.plausible = window.plausible || function () { (plausible.q = plausible.q || []).push(arguments) };
+    plausible.init = plausible.init || function (i) { plausible.o = i || {} };
+    plausible.init();
   </script>
-
-<!-- Privacy-friendly analytics by Plausible -->
-<script async src="https://plausible.io/js/pa-giwVKduso5k4WRbNlcti2.js"></script>
-<script>
-  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-  plausible.init()
-</script>
-
-
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -319,29 +191,27 @@ window.Clerk.mountUserButton(userButtonContainer, {
     }
 
     /* MODALS */
-.pro-modal-overlay {
-  position: fixed !important;
-  inset: 0 !important;
-  background: rgba(15, 23, 42, 0.45) !important;
-  backdrop-filter: blur(6px) !important;
-  display: none ;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 999999 !important;
-}
+    .pro-modal-overlay {
+      position: fixed !important;
+      inset: 0 !important;
+      background: rgba(15, 23, 42, 0.45) !important;
+      backdrop-filter: blur(6px) !important;
+      display: none;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 999999 !important;
+    }
 
-
-.pro-modal {
-  background: white !important;
-  padding: 1.6rem !important;
-  border-radius: 1rem !important;
-  max-width: 500px !important;
-  width: 90% !important;
-  box-shadow: 0 24px 40px rgba(15,23,42,0.22) !important;
-  position: relative !important;
-  z-index: 9999999 !important;
-}
-
+    .pro-modal {
+      background: white !important;
+      padding: 1.6rem !important;
+      border-radius: 1rem !important;
+      max-width: 500px !important;
+      width: 90% !important;
+      box-shadow: 0 24px 40px rgba(15, 23, 42, 0.22) !important;
+      position: relative !important;
+      z-index: 9999999 !important;
+    }
 
     /* TOAST */
     #toast {
@@ -357,26 +227,22 @@ window.Clerk.mountUserButton(userButtonContainer, {
       transition: 0.25s;
       font-size: 0.8rem;
     }
-  
-    /* --- Clerk popup animation --- */
 
-#sign-in {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
+    /* Clerk popup animation */
+    #sign-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
 
-#sign-in.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-  
+    #sign-in.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 
 <body>
-
   <!-- Clerk Sign-In Overlay -->
   <div id="sign-in" style="
     display:none;
@@ -417,7 +283,6 @@ window.Clerk.mountUserButton(userButtonContainer, {
 
   <!-- MAIN TOOL -->
   <main class="main-card" id="tool-card">
-
     <!-- LEFT PANEL -->
     <section class="panel">
       <h3 style="margin:0 0 0.3rem 0; font-size:0.9rem; color:var(--text-muted);">Paste your text</h3>
@@ -433,7 +298,6 @@ window.Clerk.mountUserButton(userButtonContainer, {
         <h4 style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.4rem;">Choose mode</h4>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-
           <!-- FREE -->
           <button class="preset-btn selected" data-preset="simple">
             <span>Simple Humanizer (Free)</span>
@@ -458,7 +322,6 @@ window.Clerk.mountUserButton(userButtonContainer, {
             <span>Cause → Effect</span>
             <span class="preset-pro-pill">PRO</span>
           </button>
-
         </div>
       </div>
 
@@ -528,33 +391,31 @@ window.Clerk.mountUserButton(userButtonContainer, {
     font-size:0.85rem;
   ">
     <div style="
-  text-align:center; 
-  margin-top:2.5rem;
-  margin-bottom:2rem;
-">
-  <a href="/pricing.html" style="
-    display:inline-block;
-    padding:0.9rem 2rem;
-    background:linear-gradient(135deg, #0ea5e9, #22c55e);
-    color:white;
-    border-radius:999px;
-    font-size:1.1rem;
-    font-weight:700;
-    text-decoration:none;
-    box-shadow:0 10px 30px rgba(14,165,233,0.35);
-    transition:transform 0.15s ease, box-shadow 0.15s ease;
-  "
-  onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 14px 35px rgba(14,165,233,0.45)';"
-  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(14,165,233,0.35)';"
-  >
-    🚀 Upgrade to PRO
-  </a>
+      text-align:center;
+      margin-top:2.5rem;
+      margin-bottom:2rem;
+    ">
+      <a href="/pricing.html" style="
+        display:inline-block;
+        padding:0.9rem 2rem;
+        background:linear-gradient(135deg, #0ea5e9, #22c55e);
+        color:white;
+        border-radius:999px;
+        font-size:1.1rem;
+        font-weight:700;
+        text-decoration:none;
+        box-shadow:0 10px 30px rgba(14,165,233,0.35);
+        transition:transform 0.15s ease, box-shadow 0.15s ease;
+      "
+      onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 14px 35px rgba(14,165,233,0.45)';"
+      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(14,165,233,0.35)';">
+        🚀 Upgrade to PRO
+      </a>
 
-  <p style="margin-top:0.6rem; color:#64748b; font-size:0.9rem;">
-    Unlock all modes, unlimited rewrites, and full power.
-  </p>
-</div>
-
+      <p style="margin-top:0.6rem; color:#64748b; font-size:0.9rem;">
+        Unlock all modes, unlimited rewrites, and full power.
+      </p>
+    </div>
   </footer>
 
   <!-- PRO EXAMPLE MODAL -->
@@ -620,468 +481,623 @@ window.Clerk.mountUserButton(userButtonContainer, {
     <span id="toastMessage">Copied!</span>
   </div>
 
-<script type="module">
-  import { supabase } from "/lib/supabase.js";
-</script>
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  
-  <!-- APP LOGIC -->
+  <!-- APP LOGIC: Clerk + Supabase + Credits + UI -->
   <script>
-  (function initNotesHumanizer() {
+    (function () {
+      const SUPABASE_URL = "https://uxyyhmvxphbqpvynbiwe.supabase.co";
+      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4eXlobXZ4cGhicXB2eW5iaXdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NTE1NDEsImV4cCI6MjA4MTAyNzU0MX0.zn6q_eRbd4oydkF0uvwkYDFjAiioX0NE52EGAjbdlw8Y";
+      const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    /* ===============================
-        CREDIT SYSTEM CONFIG
-    =============================== */
+      const PRO_MODES = ["genz", "exam", "cause_effect"];
+      const FREE_MODES = ["simple", "simple_words"];
 
-    const LIMITS = {
-      beforeLogin: { simple: 10,simple_words: 10},
-      afterLogin: { simple: 200,simple_words: 200, genz: 100, exam: 100, cause_effect: 100 }
-    };
+      let credits = null;        // logged-in Supabase row
+      let guestCredits = null;   // localStorage
+      let selectedPreset = "simple";
+      let outputText = "";
+      let realtimeChannel = null;
 
-    const PRO_MODES = ["genz", "exam", "cause_effect"];
+      window.isUserLoggedIn = false;
 
-/* ========================================================
-   SUPABASE + REALTIME CREDIT SYSTEM (FULL VERSION)
-======================================================== */
-
-async function loadCredits() {
-  const user = window.Clerk?.user;
-  const today = new Date().toDateString();
-
-  if (!user) {
-    const saved = JSON.parse(localStorage.getItem("nh_credits"));
-
-    if (!saved || saved.date !== today) {
-      const fresh = {
-        date: today,
-        beforeLogin: { ...LIMITS.beforeLogin }
-      };
-      localStorage.setItem("nh_credits", JSON.stringify(fresh));
-      return fresh;
-    }
-
-    return saved;
-  }
-
-  try {
-    const res = await fetch(`/api/getCredits?userId=${user.id}`);
-    let data = await res.json();
-
-    if (!data || data.date !== today) {
-      const fresh = {
-        date: today,
-        afterLogin: { ...LIMITS.afterLogin }
-      };
-
-      await fetch(`/api/saveCredits`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, credits: fresh })
-      });
-
-      return fresh;
-    }
-
-    return data;
-  } catch (err) {
-    console.error("Error loading Supabase credits:", err);
-    return {
-      date: today,
-      afterLogin: { ...LIMITS.afterLogin }
-    };
-  }
-}
-
-async function saveCredits(data) {
-  const user = window.Clerk?.user;
-
-  if (!user) {
-    localStorage.setItem("nh_credits", JSON.stringify(data));
-    return;
-  }
-
-  try {
-    await fetch(`/api/saveCredits`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user.id, credits: data })
-    });
-  } catch (err) {
-    console.error("Supabase save error:", err);
-  }
-}
-
-if (window.Clerk?.user) {
-  const userId = window.Clerk.user.id;
-
-  supabase
-    .channel("credits-live-" + userId)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "credits",
-        filter: `user_id=eq.${userId}`
-      },
-      (payload) => {
-        const updated = payload.new.credits;
-        credits = updated;
-        console.log("🔥 REALTIME: credits updated:", credits);
-        updateCreditCounter();
+      function todayString() {
+        return new Date().toDateString();
       }
-    )
-    .subscribe();
-}
 
+      /* ===============================
+         AUTH UI
+      =============================== */
+      function updateAuthUI() {
+        const signInBtn = document.getElementById("openSignIn");
+        const userBtnContainer = document.getElementById("clerk-user-button");
 
-
-    /* ===============================
-        UI ELEMENTS
-    =============================== */
-
-    const input = document.getElementById("inputText");
-    const outputBox = document.getElementById("outputBox");
-    const outputErr = document.getElementById("outputError");
-    const inputErr = document.getElementById("inputError");
-    const presetButtons = [...document.querySelectorAll(".preset-btn")];
-    const presetPreview = document.getElementById("presetPreview");
-    const modeUsedEl = document.getElementById("modeUsed");
-
-    const humanizeBtn = document.getElementById("humanizeBtn");
-    const humanizeCounter = document.getElementById("humanizeCounter");
-
-    const charCounter = document.getElementById("charCounter");
-
-    let selectedPreset = "simple";
-    // LOAD CREDITS ON START
-let credits = null;
-loadCredits().then(c => {
-  credits = c;
-  updateCreditCounter();
-});
-
-    /* ===============================
-    CREDIT FUNCTIONS (REQUIRED)
-=============================== */
-
-function getCreditsLeft(preset) {
-  if (!credits) return 0;
-  const pool = window.isUserLoggedIn ? credits.afterLogin : credits.beforeLogin;
-  if (!pool) return 0;
-  return typeof pool[preset] === "number" ? pool[preset] : 0;
-}
-
-function hasCredit(preset) {
-  return getCreditsLeft(preset) > 0;
-}
-
-function useCredit(preset) {
-  if (!credits) return;
-
-  if (window.isUserLoggedIn) {
-    if (typeof credits.afterLogin[preset] === "number") {
-      credits.afterLogin[preset]--;
-    }
-  } else {
-    if (typeof credits.beforeLogin[preset] === "number") {
-      credits.beforeLogin[preset]--;
-    }
-  }
-
-  saveCredits(credits);
-}
-
-    let outputText = "";
-
-    /* ===============================
-        CREDIT COUNTER DISPLAY
-    =============================== */
-
-    function updateCreditCounter() {
-      const left = getCreditsLeft(selectedPreset);
-
-      if (PRO_MODES.includes(selectedPreset)) {
-        if (!window.isUserLoggedIn) {
-          humanizeCounter.textContent = "(Login required for this mode)";
-        } else {
-          humanizeCounter.textContent = `(${left} PRO tries left today)`;
+        if (signInBtn && userBtnContainer) {
+          if (window.isUserLoggedIn) {
+            signInBtn.style.display = "none";
+            userBtnContainer.style.display = "block";
+          } else {
+            signInBtn.style.display = "inline-flex";
+            userBtnContainer.style.display = "none";
+          }
         }
-      } else {
-        humanizeCounter.textContent = `(${left} left today)`;
-      }
-    }
 
-    updateCreditCounter();
-
-    /* ===============================
-        PRESET LOGIC
-    =============================== */
-
-    const PRESET_DESC = {
-      simple: "Makes your text sound human and clean.",
-      simple_words: "Explains ideas in very simple words.",
-      exam: "Exam-style, formal school answers. (PRO Trial)",
-      genz: "Dark humour, emojis, Gen-Z tone. (PRO Trial)",
-      cause_effect: "Cause → Effect logic chain explanation. (PRO Trial)"
-    };
-
-    presetButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        selectedPreset = btn.dataset.preset;
-
-        presetButtons.forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-
-        modeUsedEl.textContent = selectedPreset.toUpperCase();
-
-        presetPreview.style.display = "block";
-        presetPreview.textContent = PRESET_DESC[selectedPreset] || "";
-
-        updateCreditCounter();
-      });
-    });
-
-    /* ===============================
-        API CALL WRAPPER
-    =============================== */
-
-    async function callAI(preset, text) {
-      try {
-        const res = await fetch("/api/humanize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ preset, userText: text })
+        const proButtons = document.querySelectorAll(
+          '.preset-btn[data-preset="exam"], .preset-btn[data-preset="genz"], .preset-btn[data-preset="cause_effect"]'
+        );
+        proButtons.forEach(btn => {
+          const pill = btn.querySelector(".preset-pro-pill");
+          if (!pill) return;
+          pill.style.display = window.isUserLoggedIn ? "none" : "inline-flex";
         });
-        const data = await res.json();
-        return data.output;
-      } catch (err) {
-        console.error("API error:", err);
-        return null;
       }
-    }
+      window.updateAuthUI = updateAuthUI;
 
-    /* ===============================
-        HUMANIZE BUTTON
-    =============================== */
+      /* ===============================
+         GUEST CREDITS (LOCALSTORAGE)
+      =============================== */
+      function loadGuestCredits() {
+        const key = "nh_guest_credits_v1";
+        const today = todayString();
+        let parsed = null;
 
-    const exampleModal = document.getElementById("proExampleModal");
-    exampleModal.addEventListener("click", (e) => {
-  e.stopPropagation(); // prevent overlay from closing instantly
-});
+        try {
+          const raw = localStorage.getItem(key);
+          parsed = raw ? JSON.parse(raw) : null;
+        } catch (e) {
+          parsed = null;
+        }
 
-    document.querySelector(".pro-modal").addEventListener("click", (e) => {
-  e.stopPropagation();  // prevents modal from closing instantly
-});
+        if (!parsed || parsed.date !== today) {
+          parsed = {
+            date: today,
+            simple: 10,
+            simple_words: 10,
+            genz: 0,
+            exam: 0,
+            cause_effect: 0
+          };
+          try {
+            localStorage.setItem(key, JSON.stringify(parsed));
+          } catch (e) { }
+        }
 
-    const exampleInput = document.getElementById("exampleInput");
-    const exampleOutput = document.getElementById("exampleOutput");
-
-    const signInOverlay = document.getElementById("sign-in");
-    document.getElementById("clerk-sign-in").addEventListener("click", (e) => {
-  e.stopPropagation();
-});
-
-
-    const PRO_EXAMPLES = {
-      genz: {
-        input: "The French Revolution changed France.",
-        output: "Bruhh France woke up and chose *violence* 💀🔥. King said 'stop', people said 'no'. Now boom—revolution."
-      },
-      exam: {
-        input: "The French Revolution changed France.",
-        output: "The French Revolution brought major political, economic, and social reforms to France."
-      },
-      cause_effect: {
-        input: "Taxes increased in France.",
-        output: "Cause → Effect:\n• Higher taxes → Public anger → Protests.\n• Food prices rose → Riots.\n• Govt debt increased → Collapse of monarchy."
-      }
-    };
-
-    humanizeBtn.addEventListener("click", async (e) => {
-  e.stopPropagation();   // <-- ADD THIS
-
-      inputErr.textContent = "";
-      outputErr.textContent = "";
-
-      const text = input.value.trim();
-      if (!text) {
-        inputErr.textContent = "Paste some text first.";
-        return;
+        guestCredits = parsed;
       }
 
-      // NO CREDIT STATE
-if (!hasCredit(selectedPreset)) {
-  console.log("NO CREDIT | loggedIn =", window.isUserLoggedIn, "| preset =", selectedPreset);
-
-  // CASE 1 → NOT LOGGED IN → ALWAYS SHOW LOGIN POPUP
-  if (!window.isUserLoggedIn) {
-    console.log("OPENING CLERK LOGIN POPUP");
-
-    if (window.showSignInOverlay) {
-      window.showSignInOverlay();
-    } else {
-      // Backup if function fails
-      const overlay = document.getElementById("sign-in");
-      if (overlay) overlay.style.display = "block";
-
-      const box = document.getElementById("clerk-sign-in");
-      if (window.Clerk && box && !box.hasChildNodes()) {
-        window.Clerk.mountSignIn(box, { appearance: { baseTheme: "light" } });
-      }
-    }
-
-    return; // STOP HERE
-  }
-
-  // CASE 2 → LOGGED IN → SHOW PRO EXAMPLE POPUP
-  console.log("OPENING PRO EXAMPLE POPUP");
-
-  const example = PRO_EXAMPLES[selectedPreset] || {
-    input: "You completed all free credits.",
-    output: "Unlock PRO to continue using this mode!"
-  };
-
-  exampleInput.textContent = example.input;
-  exampleOutput.textContent = example.output;
-  exampleModal.style.display = "flex";
-e.stopPropagation();  // <-- ADD THIS
-
-
-  return;
-}
-
-
-      // USE CREDIT
-      useCredit(selectedPreset);
-      updateCreditCounter();
-
-      // Loading skeleton
-      outputBox.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:0.4rem;">
-          <div style="height:0.75rem; background:#e2e8f0; border-radius:999px;"></div>
-          <div style="height:0.75rem; background:#e2e8f0; border-radius:999px; width:90%;"></div>
-          <div style="height:0.75rem; background:#e2e8f0; border-radius:999px; width:80%;"></div>
-        </div>
-      `;
-
-      const result = await callAI(selectedPreset, text);
-
-      if (!result) {
-        outputErr.textContent = "Something went wrong. Try again.";
-        return;
+      function saveGuestCredits(c) {
+        try {
+          localStorage.setItem("nh_guest_credits_v1", JSON.stringify(c));
+        } catch (e) { }
       }
 
-      outputText = result;
-      outputBox.innerHTML = result.replace(/\n/g, "<br>");
-    });
+      /* ===============================
+         SUPABASE CREDITS (LOGGED-IN)
+      =============================== */
+      function mapRowToCredits(row) {
+        return {
+          user_id: row.user_id,
+          date: row.date,
+          simple: row.simple ?? 0,
+          simple_words: row.simple_words ?? 0,
+          genz: row.genz ?? 0,
+          exam: row.exam ?? 0,
+          cause_effect: row.cause_effect ?? 0
+        };
+      }
 
-    /* ===============================
-        COPY & DOWNLOAD
-    =============================== */
+      async function loadCreditsForUser(user) {
+        if (!user || !user.id) return;
 
-    const toast = document.getElementById("toast");
-    const toastMsg = document.getElementById("toastMessage");
+        const userId = user.id;
+        const today = todayString();
 
-    function showToast(msg) {
-      toastMsg.textContent = msg;
-      toast.style.opacity = 1;
-      setTimeout(() => {
-        toast.style.opacity = 0;
-      }, 1500);
-    }
+        try {
+          const { data, error } = await db
+            .from("user_usage")
+            .select("*")
+            .eq("user_id", userId)
+            .single();
 
-    document.getElementById("copyBtn").addEventListener("click", () => {
-      navigator.clipboard.writeText(outputText || "");
-      showToast("Copied!");
-    });
+          if (!data) {
+            // No row → insert defaults
+            const defaults = {
+              user_id: userId,
+              date: today,
+              simple: 10,
+              simple_words: 10,
+              genz: 10,
+              exam: 10,
+              cause_effect: 10
+            };
 
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      const blob = new Blob([outputText || ""], { type: "text/plain" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "humanized.txt";
-      link.click();
-    });
+            const { data: inserted, error: insertErr } = await db
+              .from("user_usage")
+              .insert(defaults)
+              .select("*")
+              .single();
 
-    /* ===============================
-        CLOSE MODALS
-    =============================== */
+            if (insertErr) {
+              console.error("Supabase insert error:", insertErr);
+              return;
+            }
 
-    document.getElementById("proExampleCloseBtn").addEventListener("click", () => {
-      exampleModal.style.display = "none";
-    });
+            credits = mapRowToCredits(inserted);
+          } else {
+            let row = data;
+            if (row.date !== today) {
+              const reset = {
+                date: today,
+                simple: 10,
+                simple_words: 10,
+                genz: 10,
+                exam: 10,
+                cause_effect: 10
+              };
 
-// Close PRO modal when clicking OUTSIDE the modal box
-// Close PRO modal only when clicking OUTSIDE the modal box
-// Stop clicks INSIDE modal from closing it
-document.querySelector(".pro-modal").addEventListener("click", (e) => {
-  e.stopPropagation();
-});
+              const { data: updated, error: updateErr } = await db
+                .from("user_usage")
+                .update(reset)
+                .eq("user_id", userId)
+                .select("*")
+                .single();
 
-// Close modal only when clicking OUTSIDE the modal
-exampleModal.addEventListener("click", (e) => {
-  const box = document.querySelector(".pro-modal");
-  if (!box.contains(e.target)) {
-    exampleModal.style.display = "none";
-  }
-});
+              if (updateErr) {
+                console.error("Supabase reset error:", updateErr);
+                return;
+              }
+              row = updated;
+            }
+            credits = mapRowToCredits(row);
+          }
 
+          updateCreditCounter();
+          setupRealtime(userId);
+        } catch (err) {
+          console.error("loadCreditsForUser error:", err);
+        }
+      }
 
+      async function saveCreditsToSupabase(current) {
+        const user = window.Clerk?.user;
+        if (!user || !user.id || !current) return;
 
-// Close Clerk sign-in when clicking OUTSIDE the sign-in box
-signInOverlay.addEventListener("click", (e) => {
-  const box = document.getElementById("clerk-sign-in");
-  if (!box.contains(e.target)) {
-    signInOverlay.classList.remove("show");
-setTimeout(() => {
-  signInOverlay.style.display = "none";
-}, 300); // matches animation length
+        const payload = {
+          date: current.date,
+          simple: current.simple,
+          simple_words: current.simple_words,
+          genz: current.genz,
+          exam: current.exam,
+          cause_effect: current.cause_effect
+        };
 
-  }
-});
-;
+        try {
+          const { error } = await db
+            .from("user_usage")
+            .update(payload)
+            .eq("user_id", user.id);
 
+          if (error) {
+            console.error("Supabase save credits error:", error);
+          }
+        } catch (err) {
+          console.error("saveCreditsToSupabase error:", err);
+        }
+      }
 
-    document.getElementById("buyProBtn").addEventListener("click", () => {
-      window.location.href = "/pricing.html";
-    });
+      function setupRealtime(userId) {
+        if (!userId) return;
 
-    /* ===============================
-        CHARACTER COUNTER
-    =============================== */
+        if (realtimeChannel) {
+          try { realtimeChannel.unsubscribe(); } catch (e) { }
+        }
 
-    input.addEventListener("input", function () {
-      const count = this.value.length;
-      charCounter.textContent = `${count} / 2000 characters`;
-    });
+        realtimeChannel = db
+          .channel("user_usage_credits_" + userId)
+          .on(
+            "postgres_changes",
+            {
+              event: "UPDATE",
+              schema: "public",
+              table: "user_usage",
+              filter: "user_id=eq." + userId
+            },
+            (payload) => {
+              if (payload.new) {
+                credits = mapRowToCredits(payload.new);
+                updateCreditCounter();
+              }
+            }
+          )
+          .subscribe();
+      }
 
-  })();
-  </script>
+      /* ===============================
+         CREDIT HELPERS
+      =============================== */
+      function getActiveCredits() {
+        return window.isUserLoggedIn ? credits : guestCredits;
+      }
 
-  <!-- ESC key + optional scroll -->
-  <script>
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
+      function getCreditsLeft(preset) {
+        const c = getActiveCredits();
+        if (!c) return 0;
+        if (typeof c[preset] === "number") return c[preset];
+        return 0;
+      }
+
+      function updateCreditCounter() {
+        const counterEl = document.getElementById("humanizeCounter");
+        if (!counterEl) return;
+
+        const left = getCreditsLeft(selectedPreset);
+
+        if (PRO_MODES.includes(selectedPreset)) {
+          if (!window.isUserLoggedIn) {
+            counterEl.textContent = "(Login required for this mode)";
+          } else {
+            counterEl.textContent = `(${left} PRO rewrites left today)`;
+          }
+        } else {
+          counterEl.textContent = `(${left} left today)`;
+        }
+      }
+
+      function useCredit(preset) {
+        const c = getActiveCredits();
+        if (!c) return;
+
+        if (typeof c[preset] === "number") {
+          c[preset] = Math.max(0, c[preset] - 1);
+        }
+
+        if (window.isUserLoggedIn) {
+          credits = c;
+          saveCreditsToSupabase(c);
+        } else {
+          guestCredits = c;
+          saveGuestCredits(c);
+        }
+
+        updateCreditCounter();
+      }
+
+      /* ===============================
+         API CALL WRAPPER
+      =============================== */
+      async function callAI(preset, text) {
+        try {
+          const res = await fetch("/api/humanize", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ preset, userText: text })
+          });
+          const data = await res.json();
+          return data.output;
+        } catch (err) {
+          console.error("API error:", err);
+          return null;
+        }
+      }
+
+      /* ===============================
+         UI / MODALS / EVENTS
+      =============================== */
+      const PRESET_DESC = {
+        simple: "Makes your text sound human and clean.",
+        simple_words: "Explains ideas in very simple words.",
+        exam: "Exam-style, formal school answers. (PRO credit)",
+        genz: "Dark humour, emojis, Gen-Z tone. (PRO credit)",
+        cause_effect: "Cause → Effect logic chain explanation. (PRO credit)"
+      };
+
+      const PRO_EXAMPLES = {
+        genz: {
+          input: "The French Revolution changed France.",
+          output: "Bruhh France woke up and chose *violence* 💀🔥. King said 'stop', people said 'no'. Now boom—revolution."
+        },
+        exam: {
+          input: "The French Revolution changed France.",
+          output: "The French Revolution brought major political, economic, and social reforms to France."
+        },
+        cause_effect: {
+          input: "Taxes increased in France.",
+          output: "Cause → Effect:\n• Higher taxes → Public anger → Protests.\n• Food prices rose → Riots.\n• Govt debt increased → Collapse of monarchy."
+        }
+      };
+
+      function showToast(msg) {
+        const toast = document.getElementById("toast");
+        const toastMsg = document.getElementById("toastMessage");
+        if (!toast || !toastMsg) return;
+
+        toastMsg.textContent = msg;
+        toast.style.opacity = 1;
+        setTimeout(() => {
+          toast.style.opacity = 0;
+        }, 1500);
+      }
+
+      function showProExample(preset) {
+        const exampleModal = document.getElementById("proExampleModal");
+        const exampleInput = document.getElementById("exampleInput");
+        const exampleOutput = document.getElementById("exampleOutput");
+
+        const example = PRO_EXAMPLES[preset] || {
+          input: "You completed all free credits.",
+          output: "Unlock PRO to continue using this mode!"
+        };
+
+        if (exampleInput) exampleInput.textContent = example.input;
+        if (exampleOutput) exampleOutput.textContent = example.output;
+        if (exampleModal) exampleModal.style.display = "flex";
+      }
+
+      function initUI() {
+        const input = document.getElementById("inputText");
+        const outputBox = document.getElementById("outputBox");
+        const outputErr = document.getElementById("outputError");
+        const inputErr = document.getElementById("inputError");
+        const presetButtons = Array.from(document.querySelectorAll(".preset-btn"));
+        const presetPreview = document.getElementById("presetPreview");
+        const modeUsedEl = document.getElementById("modeUsed");
+        const humanizeBtn = document.getElementById("humanizeBtn");
+        const charCounter = document.getElementById("charCounter");
+        const copyBtn = document.getElementById("copyBtn");
+        const downloadBtn = document.getElementById("downloadBtn");
+
         const signInOverlay = document.getElementById("sign-in");
-        const proModal = document.getElementById("proExampleModal");
+        const signInBox = document.getElementById("clerk-sign-in");
+        const openSignInBtn = document.getElementById("openSignIn");
 
-        if (signInOverlay && signInOverlay.style.display === "block") {
-          signInOverlay.style.display = "none";
+        const exampleModal = document.getElementById("proExampleModal");
+        const proCloseBtn = document.getElementById("proExampleCloseBtn");
+        const buyProBtn = document.getElementById("buyProBtn");
+        const proModalBox = document.querySelector(".pro-modal");
+
+        // Sign-in overlay helper
+        window.showSignInOverlay = function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          if (!signInOverlay) return;
+
+          signInOverlay.style.display = "block";
+          setTimeout(() => {
+            signInOverlay.classList.add("show");
+          }, 10);
+
+          if (window.Clerk && signInBox && !signInBox.hasChildNodes()) {
+            window.Clerk.mountSignIn(signInBox, {
+              afterSignInUrl: window.location.href,
+              afterSignUpUrl: window.location.href,
+              appearance: { baseTheme: "light" }
+            });
+          }
+        };
+
+        if (openSignInBtn) {
+          openSignInBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            window.showSignInOverlay(e);
+          });
         }
-        if (proModal && proModal.style.display === "flex") {
-          proModal.style.display = "none";
+
+        if (signInBox) {
+          signInBox.addEventListener("click", function (e) {
+            e.stopPropagation();
+          });
+        }
+
+        if (signInOverlay) {
+          signInOverlay.addEventListener("click", function (e) {
+            const box = document.getElementById("clerk-sign-in");
+            if (box && !box.contains(e.target)) {
+              signInOverlay.classList.remove("show");
+              setTimeout(() => {
+                signInOverlay.style.display = "none";
+              }, 300);
+            }
+          });
+        }
+
+        // PRO modal events
+        if (proModalBox) {
+          proModalBox.addEventListener("click", function (e) {
+            e.stopPropagation();
+          });
+        }
+
+        if (exampleModal) {
+          exampleModal.addEventListener("click", function (e) {
+            const box = document.querySelector(".pro-modal");
+            if (box && !box.contains(e.target)) {
+              exampleModal.style.display = "none";
+            }
+          });
+        }
+
+        if (proCloseBtn) {
+          proCloseBtn.addEventListener("click", function () {
+            if (exampleModal) exampleModal.style.display = "none";
+          });
+        }
+
+        if (buyProBtn) {
+          buyProBtn.addEventListener("click", function () {
+            window.location.href = "/pricing.html";
+          });
+        }
+
+        // ESC handling
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape") {
+            if (signInOverlay && signInOverlay.style.display === "block") {
+              signInOverlay.classList.remove("show");
+              setTimeout(() => {
+                signInOverlay.style.display = "none";
+              }, 300);
+            }
+            if (exampleModal && exampleModal.style.display === "flex") {
+              exampleModal.style.display = "none";
+            }
+          }
+        });
+
+        // Char counter
+        if (input && charCounter) {
+          input.addEventListener("input", function () {
+            const count = this.value.length;
+            charCounter.textContent = `${count} / 2000 characters`;
+          });
+        }
+
+        // Preset buttons
+        presetButtons.forEach(btn => {
+          btn.addEventListener("click", function () {
+            const preset = this.dataset.preset;
+            selectedPreset = preset;
+
+            presetButtons.forEach(b => b.classList.remove("selected"));
+            this.classList.add("selected");
+
+            if (modeUsedEl) {
+              modeUsedEl.textContent = preset.toUpperCase();
+            }
+
+            if (presetPreview) {
+              presetPreview.style.display = "block";
+              presetPreview.textContent = PRESET_DESC[preset] || "";
+            }
+
+            updateCreditCounter();
+          });
+        });
+
+        // HUMANIZE BUTTON
+        if (humanizeBtn) {
+          humanizeBtn.addEventListener("click", async function (e) {
+            e.stopPropagation();
+            if (!input || !outputBox || !outputErr || !inputErr) return;
+
+            inputErr.textContent = "";
+            outputErr.textContent = "";
+
+            const text = input.value.trim();
+            if (!text) {
+              inputErr.textContent = "Paste some text first.";
+              return;
+            }
+
+            // PRO modes require login
+            if (PRO_MODES.includes(selectedPreset) && !window.isUserLoggedIn) {
+              window.showSignInOverlay(e);
+              return;
+            }
+
+            const left = getCreditsLeft(selectedPreset);
+
+            if (left <= 0) {
+              if (PRO_MODES.includes(selectedPreset) && window.isUserLoggedIn) {
+                showProExample(selectedPreset);
+              } else {
+                outputErr.textContent = "No free credits left for this mode today.";
+              }
+              return;
+            }
+
+            // Use credit
+            useCredit(selectedPreset);
+
+            // Loading skeleton
+            outputBox.innerHTML = `
+              <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                <div style="height:0.75rem; background:#e2e8f0; border-radius:999px;"></div>
+                <div style="height:0.75rem; background:#e2e8f0; border-radius:999px; width:90%;"></div>
+                <div style="height:0.75rem; background:#e2e8f0; border-radius:999px; width:80%;"></div>
+              </div>
+            `;
+
+            const result = await callAI(selectedPreset, text);
+            if (!result) {
+              outputErr.textContent = "Something went wrong. Try again.";
+              return;
+            }
+
+            outputText = result;
+            outputBox.innerHTML = result.replace(/\n/g, "<br>");
+          });
+        }
+
+        // COPY
+        if (copyBtn) {
+          copyBtn.addEventListener("click", function () {
+            navigator.clipboard.writeText(outputText || "");
+            showToast("Copied!");
+          });
+        }
+
+        // DOWNLOAD
+        if (downloadBtn) {
+          downloadBtn.addEventListener("click", function () {
+            const blob = new Blob([outputText || ""], { type: "text/plain" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "humanized.txt";
+            link.click();
+          });
         }
       }
-    });
 
-    const scrollBtn = document.getElementById("landing-scroll-btn");
-    if (scrollBtn) {
-      scrollBtn.addEventListener("click", () => {
-        document.getElementById("tool-card")?.scrollIntoView({ behavior: "smooth" });
+      /* ===============================
+         MAIN INIT
+      =============================== */
+      window.addEventListener("load", async function () {
+        initUI();
+        loadGuestCredits();
+        updateCreditCounter();
+        updateAuthUI();
+
+        if (!window.Clerk) {
+          console.warn("Clerk not loaded yet");
+          return;
+        }
+
+        try {
+          await window.Clerk.load();
+
+          const userBtnContainer = document.getElementById("clerk-user-button");
+
+          const runAuthFlow = async () => {
+            const user = window.Clerk.user;
+            if (user && user.id) {
+              window.isUserLoggedIn = true;
+              updateAuthUI();
+
+              if (userBtnContainer && !userBtnContainer.hasChildNodes()) {
+                window.Clerk.mountUserButton(userBtnContainer, {
+                  afterSignInUrl: window.location.href,
+                  afterSignUpUrl: window.location.href,
+                  afterSignOutUrl: window.location.href,
+                  appearance: { baseTheme: "light" }
+                });
+              }
+
+              await loadCreditsForUser(user);
+            } else {
+              window.isUserLoggedIn = false;
+              updateAuthUI();
+              loadGuestCredits();
+              updateCreditCounter();
+            }
+          };
+
+          await runAuthFlow();
+          window.Clerk.addListener(runAuthFlow);
+        } catch (err) {
+          console.error("Clerk load error:", err);
+        }
       });
-    }
+    })();
   </script>
-
 </body>
 </html>
