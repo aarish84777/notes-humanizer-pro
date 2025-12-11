@@ -105,6 +105,18 @@ window.Clerk.mountSignIn(signInBox, {
         const emit = () => {
           // user is null when signed out, object with id when signed in
           const user = window.Clerk.user;
+          // Save email → userId map to backend
+if (user && user.primaryEmailAddress) {
+  fetch("/api/saveEmailMap", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: user.primaryEmailAddress.emailAddress,
+      userId: user.id
+    })
+  }).catch(err => console.error("Email map error:", err));
+}
+
           window.isUserLoggedIn = !!(user && user.id);
           window.updateAuthUI();
         };

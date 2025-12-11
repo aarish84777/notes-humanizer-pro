@@ -20,30 +20,54 @@ export default async function handler(req, res) {
 
     const eventName = event.meta.event_name;
 
-    const file = path.join(process.cwd(), "proUsers.json");
+    // Load email → userId mapping
+    const mapFile = path.join(process.cwd(), "emailToUserId.json");
+    let emailMap = {};
 
-    let db = {};
-    if (fs.existsSync(file)) {
-      db = JSON.parse(fs.readFileSync(file, "utf8"));
+    if (fs.existsSync(mapFile)) {
+      emailMap = JSON.parse(fs.readFileSync(mapFile, "utf8"));
     }
 
+    const userId = emailMap[email];
+
+    if (!userId) {
+      console.log("⚠️ No userId found for email:", email);
+      return res.status(200).json({ message: "userId not yet mapped" });
+    }
+
+    // Load proUsers.json
+    const proFile = path.join(process.cwd(), "proUsers.json");
+    let db = {};
+
+    if (fs.existsSync(proFile)) {
+      db = JSON.parse(fs.readFileSync(proFile, "utf8"));
+    }
+
+    // Handle PRO activation
     if (
       eventName === "order_created" ||
       eventName === "subscription_created" ||
       eventName === "invoice_payment_succeeded"
     ) {
-      db[email] = true;
+      db[userId] = {
+        isPro: true,
+        plan: "lifetime",
+        activatedAt: new Date().toISOString().split("T")[0]
+      };
+      console.log("⭐ PRO ACTIVATED for:", userId);
     }
 
+    // Handle cancellation
     if (eventName === "subscription_cancelled") {
-      db[email] = false;
+      if (db[userId]) db[userId].isPro = false;
+      console.log("❌ PRO CANCELLED for:", userId);
     }
 
-    fs.writeFileSync(file, JSON.stringify(db, null, 2));
+    fs.writeFileSync(proFile, JSON.stringify(db, null, 2));
 
     return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("Webhook error:", error);
-    return res.status(200).json({ error: false });
+  } catch (err) {
+    console.error("Webhook error:", err);
+    return res.status(200).json({ error: true });
   }
 }
