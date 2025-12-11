@@ -634,8 +634,8 @@ window.Clerk.mountUserButton(userButtonContainer, {
     =============================== */
 
     const LIMITS = {
-      beforeLogin: { simple: 1, simple_words: 1 },
-      afterLogin: { simple: 2, simple_words: 2, genz: 1, exam: 1, cause_effect: 1 }
+      beforeLogin: { simple: 10,simple_words: 10},
+      afterLogin: { simple: 200,simple_words: 200, genz: 100, exam: 100, cause_effect: 100 }
     };
 
     const PRO_MODES = ["genz", "exam", "cause_effect"];
