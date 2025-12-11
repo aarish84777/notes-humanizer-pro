@@ -2,9 +2,9 @@ import fs from "fs";
 import path from "path";
 
 export default function handler(req, res) {
-  const email = req.query.email;
-  if (!email) {
-    return res.status(400).json({ error: "Missing email" });
+  const userId = req.query.userId; // <-- FIXED
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
   }
 
   const file = path.join(process.cwd(), "proUsers.json");
@@ -14,7 +14,9 @@ export default function handler(req, res) {
   }
 
   const db = JSON.parse(fs.readFileSync(file, "utf8"));
-  const isPro = db[email] === true;
+
+  // Correct PRO check (matches your JSON!)
+  const isPro = db[userId]?.isPro === true;
 
   return res.status(200).json({ active: isPro });
 }
