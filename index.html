@@ -498,7 +498,11 @@ function openOverlay() {
     }
 }
 
-document.getElementById("openSignIn").addEventListener("click", openOverlay);
+document.getElementById("openSignIn").addEventListener("click", () => {
+  if (window.plausible) plausible("Sign In Click");
+  openOverlay();
+});
+
 document.getElementById("openSignIn2").addEventListener("click", openOverlay);
 
 /* CLOSE ONLY IF CLICK OUTSIDE */

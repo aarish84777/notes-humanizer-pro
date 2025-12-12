@@ -785,6 +785,8 @@ window.showSignInOverlay = function (e) {
     };
 
     humanizeBtn.addEventListener("click", async (e) => {
+      if (window.plausible) plausible("Humanize Click");
+
   e.stopPropagation();   // <-- ADD THIS
 
       inputErr.textContent = "";
